@@ -20,84 +20,74 @@ def main():
 
     result = {}
 
-    card_pos = (1530, 225, 360, 515)
-    # card_pos = (1560, 270, 340, 480)
-    number_pos = (1596, 773, 40, 40)
+    card_pos = (25, 225, 360, 500)
+    number_pos = (85, 770, 30, 30)
+
+    # debug_mode(card_pos, number_pos)
+
     pokemon_templates_dir = r'C:\Users\karol.tracz\PycharmProjects\PokemonTCGPocket\pokemon_images'
     number_templates_dir = r'C:\Users\karol.tracz\PycharmProjects\PokemonTCGPocket\number_images'
-    threshold = 0.65
 
-    # # for debugging
-    # pyautogui.moveTo(card_pos[0], card_pos[1])
-    # pyautogui.moveTo(card_pos[0]+card_pos[2], card_pos[1], duration=1)
-    # pyautogui.moveTo(card_pos[0]+card_pos[2], card_pos[1]+card_pos[3], duration=1)
-    # sleep(2)
-    # pyautogui.moveTo(number_pos[0], number_pos[1])
-    # pyautogui.moveTo(number_pos[0]+number_pos[2], number_pos[1], duration=1)
-    # pyautogui.moveTo(number_pos[0]+number_pos[2], number_pos[1]+number_pos[3], duration=1)
-    # while True:
-    #     print(pyautogui.position())
-    #     pyautogui.sleep(3)
-    #     move_card()
-    # input('debugging break')
-
-    count = 10
+    number_threshold = 0.85
+    count = 0
 
     while True:
         pyautogui.screenshot('./temp/number.png', region=number_pos)
         pyautogui.screenshot('./temp/temp.png', region=card_pos)
-        sleep(1)
+        sleep(0.5)
 
         try:
-            img_path = os.path.join(pokemon_templates_dir, pokemon_tuple[count])
-            print(f"{pokemon_tuple[count][:-11]}\t{round(compare_img(template_path=img_path, image_path='./temp/temp.png'), 2)}\t", end='')
-            if compare_img(template_path=img_path, image_path='./temp/temp.png') > threshold:
-                for number in os.listdir(number_templates_dir):
-                    num_img = os.path.join(number_templates_dir, number)
-                    if compare_img(template_path=num_img, image_path='./temp/number.png') > 0.9:
-                        print(f"ADD {pokemon_tuple[count][:-11]}: {int(number[:-4])} ", end='')
-                        result[pokemon_tuple[count][:-5]] = int(number[:-4])
-                        move_card()
-                        sleep(1)
-            elif compare_img(template_path='./temp/not_obtained.png', image_path='./temp/temp.png') > 0.5:
-                print(f"adding {pokemon_tuple[count][:-5]}: 0 ", end='')
+            # print(os.listdir(number_templates_dir)[::-1])
+            number_ = 13
+            for number in os.listdir(number_templates_dir)[::-1]:
+                num_img = os.path.join(number_templates_dir, number)
+                print(number_)
+                # print(f"{number} {round(compare_img(template_path=num_img, image_path='./temp/number.png'), 2)}")
+                if compare_img(template_path=num_img, image_path='./temp/number.png') > number_threshold:
+                    print(f"{round(compare_img(template_path=num_img, image_path='./temp/number.png'), 2)}", end=' ')
+                    print(f"ADD {pokemon_tuple[count][:-5]}=={count}: {number_} ")
+                    result[pokemon_tuple[count][:-5]] = number_
+                    move_card()
+                    sleep(0.8)
+                    break
+                number_ -= 1
+
+            if compare_img(template_path='./temp/not_obtained.png', image_path='./temp/temp.png') > 0.7:
+                print(f"{round(compare_img(template_path='./temp/not_obtained.png', image_path='./temp/temp.png'), 2)}", end=' ')
+                print(f"ADD {pokemon_tuple[count][:-5]}=={count}: 0 ")
                 result[pokemon_tuple[count][:-5]] = 0
                 move_card()
-                sleep(1)
+                sleep(0.8)
+
         except Exception as err:
             print(f'{err=}')
 
-        if pokemon_tuple[count][:-5] not in result:
-            print(f'NOT DETECTED {pokemon_tuple[count]}')
-            result[pokemon_tuple[count][:-5]] = False
-            move_card()
-            sleep(1)
-
-
-            # print('\n DEEPSCANING \n')
-            # for name in os.listdir(pokemon_templates_dir):
-            #     if compare_img(template_path=os.path.join(pokemon_templates_dir, name), image_path='./temp/temp.png') > threshold:
-            #         for number in os.listdir(number_templates_dir):
-            #             if compare_img(template_path=os.path.join(number_templates_dir, number), image_path='./temp/number.png') > 0.9:
-            #                 print(f"adding {name[:-5]}: {int(number[:-4])}", end='')
-            #                 result[name[:-5]] = int(number[:-4])
-            #                 move_card()
-            #                 sleep(1)
-            #                 break
-            #         if name not in result:
-            #             result[name] = 10
-            #         break
-        else:
-            print('SKIP')
-
         count += 1
-        if count % 10 == 0:
-            print(f'{result=}')
+        if count % 5 == 0:
+            print(f'{count}\t{result=}')
+
+        if count == 226:
+            print(f'{count}\t{result=}')
+            break
+
+
+def debug_mode(card_pos, number_pos):
+    pyautogui.moveTo(card_pos[0], card_pos[1])
+    pyautogui.moveTo(card_pos[0]+card_pos[2], card_pos[1], duration=1)
+    pyautogui.moveTo(card_pos[0]+card_pos[2], card_pos[1]+card_pos[3], duration=1)
+    sleep(1)
+    pyautogui.moveTo(number_pos[0], number_pos[1])
+    pyautogui.moveTo(number_pos[0]+number_pos[2], number_pos[1], duration=1)
+    pyautogui.moveTo(number_pos[0]+number_pos[2], number_pos[1]+number_pos[3], duration=1)
+    while True:
+        print(pyautogui.position())
+        pyautogui.sleep(3)
+        move_card()
 
 
 def move_card():
-    pyautogui.moveTo(randrange(1750, 1850), randrange(840, 920))
-    pyautogui.dragTo(randrange(1530, 1630), randrange(840, 920), duration=(randrange(4, 8)/10))
+    pyautogui.moveTo(randrange(325, 390), randrange(835, 865))
+    pyautogui.dragTo(randrange(10, 110), randrange(840, 920), duration=(randrange(4, 8)/10))
 
 
 def compare_img(template_path, image_path):
