@@ -1,7 +1,7 @@
 from random import randrange
 from time import sleep
 from urllib.parse import urlparse
-from bs4 import BeautifulSoup
+import json
 
 from data import pokemon_tuple
 
@@ -9,66 +9,85 @@ from requests import get, RequestException
 import os
 import cv2
 import pyautogui
+from bs4 import BeautifulSoup
 
-with open('old.html', 'r') as f:
+
+with open('source_code.html', 'r') as f:
     raw_source = f.read()
+with open('config.json', 'r') as f:
+    config = json.load(f)
+
+CARD_POS = tuple(config['card_pos'])
+NUMBER_POS = tuple(config['number_pos'])
 
 
 def main():
     # print(process_multiple_cards(raw_source))
     # input('break')
 
+    print(f"{config=}")
+
+    for k, v in config['sets'].items():
+        print(k)
+        if k == 'a1' or k == 'a1a':
+            continue
+        result = count_set(set_starting_pos=v['start'], number_of_cards_in_set=v['all'], star_card=v['star'],
+                           shiny_card=v['shiny'], crown_card=v['crown'])
+        print(f'{k} {result=}')
+
+        # Because star, shinny & crown not detected
+        input('CHANGE SET')
+
+
+def count_set(set_starting_pos: int, number_of_cards_in_set: int, star_card: int, shiny_card: int, crown_card: int) -> dict:
+
     result = {}
 
-    card_pos = (25, 225, 360, 500)
-    number_pos = (85, 770, 30, 30)
-
-    # debug_mode(card_pos, number_pos)
-
-    pokemon_templates_dir = r'C:\Users\karol.tracz\PycharmProjects\PokemonTCGPocket\pokemon_images'
     number_templates_dir = r'C:\Users\karol.tracz\PycharmProjects\PokemonTCGPocket\number_images'
 
     number_threshold = 0.85
     count = 0
 
     while True:
-        pyautogui.screenshot('./temp/number.png', region=number_pos)
-        pyautogui.screenshot('./temp/temp.png', region=card_pos)
-        sleep(0.5)
+        pyautogui.screenshot('./temp/number.png', region=NUMBER_POS)
+        pyautogui.screenshot('./temp/temp.png', region=CARD_POS)
+        sleep(1)
 
-        try:
-            # print(os.listdir(number_templates_dir)[::-1])
-            number_ = 13
-            for number in os.listdir(number_templates_dir)[::-1]:
-                num_img = os.path.join(number_templates_dir, number)
-                print(number_)
-                # print(f"{number} {round(compare_img(template_path=num_img, image_path='./temp/number.png'), 2)}")
-                if compare_img(template_path=num_img, image_path='./temp/number.png') > number_threshold:
-                    print(f"{round(compare_img(template_path=num_img, image_path='./temp/number.png'), 2)}", end=' ')
-                    print(f"ADD {pokemon_tuple[count][:-5]}=={count}: {number_} ")
-                    result[pokemon_tuple[count][:-5]] = number_
-                    move_card()
-                    sleep(0.8)
-                    break
-                number_ -= 1
+        number_ = 17
+        for number in os.listdir(number_templates_dir)[::-1]:
+            num_img = os.path.join(number_templates_dir, number)
 
-            if compare_img(template_path='./temp/not_obtained.png', image_path='./temp/temp.png') > 0.7:
-                print(f"{round(compare_img(template_path='./temp/not_obtained.png', image_path='./temp/temp.png'), 2)}", end=' ')
-                print(f"ADD {pokemon_tuple[count][:-5]}=={count}: 0 ")
-                result[pokemon_tuple[count][:-5]] = 0
+            # print(number_)
+            # print(f"{number} {round(compare_img(template_path=num_img, image_path='./temp/number.png'), 2)}")
+            try:
+                confidence = compare_img(template_path=num_img, image_path='./temp/number.png')
+            except Exception as err:
+                print(f'confidence set to 0 because of error{err=}')
+                confidence = 0
+
+            if confidence > number_threshold:
+                print(f"{round(compare_img(template_path=num_img, image_path='./temp/number.png'), 2)}", end=' ')
+                print(f"ADD {pokemon_tuple[set_starting_pos][:-5]} {count=}: {number_} ")
+                result[pokemon_tuple[set_starting_pos][:-5]] = number_
                 move_card()
-                sleep(0.8)
+                sleep(0.5)
+                break
 
-        except Exception as err:
-            print(f'{err=}')
+            number_ -= 1
+
+        if compare_img(template_path='./temp/not_obtained.png', image_path='./temp/temp.png') > 0.5:
+            print(f"{round(compare_img(template_path='./temp/not_obtained.png', image_path='./temp/temp.png'), 2)}", end=' ')
+            print(f"ADD {pokemon_tuple[set_starting_pos][:-5]}=={count}: 0 ")
+            result[pokemon_tuple[set_starting_pos][:-5]] = 0
+            move_card()
+            sleep(0.5)
 
         count += 1
-        if count % 5 == 0:
-            print(f'{count}\t{result=}')
-
-        if count == 226:
-            print(f'{count}\t{result=}')
-            break
+        set_starting_pos += 1
+        if count == number_of_cards_in_set:
+            print(f'{count=} {set_starting_pos=}\n{result=}')
+            return result
+            # TO-DO break and go to deep scanning mode for star and crown cards, potentially separated in sets.
 
 
 def debug_mode(card_pos, number_pos):
