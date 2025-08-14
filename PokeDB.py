@@ -10,6 +10,7 @@ def main() -> None:
     create_database(pokemon_list=pokemon_list)
     pass
 
+
 def change_rarity(sorce_json: list) -> list:
     rarities = {
         '◊': '1_diamond',
@@ -49,7 +50,6 @@ def create_database(pokemon_list: list) -> None:
     cur.execute("CREATE TABLE normal_carads (id, name, set_num, num, pack, rarity, amount, stage)")
     cur.execute("CREATE TABLE promo_cards (id, name, set_num, num, pack, rarity, amount, stage)")
 
-
     normal_carads = json2db_data_parser([i for i in pokemon_list if i['id'][:2] != 'pa'])
     promo_cards = json2db_data_parser([i for i in pokemon_list if i['id'][:2] == 'pa'])
     print(normal_carads[:100])
@@ -58,6 +58,7 @@ def create_database(pokemon_list: list) -> None:
     cur.executemany("INSERT INTO normal_carads VALUES (?, ?, ?, ?, ?, ?, ?, ?)", normal_carads)
     cur.executemany("INSERT INTO promo_cards VALUES (?, ?, ?, ?, ?, ?, ?, ?)", promo_cards)
     con.commit()
+
 
 def json2db_data_parser(json: list) -> list:
     procesed_cards = []
@@ -75,6 +76,7 @@ def json2db_data_parser(json: list) -> list:
         )
         procesed_cards.append(pokemon_data)
     return procesed_cards
+
 
 if __name__ == '__main__':
     main()
