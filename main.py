@@ -4,6 +4,7 @@ import json
 import os
 from typing import Tuple
 import subprocess
+import sqlite3
 
 import cv2
 import pyautogui
@@ -18,6 +19,7 @@ NUMBER_POS = tuple(config['number_pos'])
 
 def main() -> None:
     move_card_new()
+    count_set_new('PokeDB.db')
     input()
     print(f"{config=}")
 
@@ -84,18 +86,11 @@ def count_set(set_starting_pos: int, number_of_cards_in_set: int, star_card: int
             # TO-DO break and go to deep scanning mode for star and crown cards, potentially separated in sets.
 
 
-def debug_mode(card_pos: Tuple[int], number_pos: Tuple[int]):
-    pyautogui.moveTo(card_pos[0], card_pos[1])
-    pyautogui.moveTo(card_pos[0]+card_pos[2], card_pos[1], duration=1)
-    pyautogui.moveTo(card_pos[0]+card_pos[2], card_pos[1]+card_pos[3], duration=1)
-    sleep(1)
-    pyautogui.moveTo(number_pos[0], number_pos[1])
-    pyautogui.moveTo(number_pos[0]+number_pos[2], number_pos[1], duration=1)
-    pyautogui.moveTo(number_pos[0]+number_pos[2], number_pos[1]+number_pos[3], duration=1)
-    while True:
-        print(pyautogui.position())
-        pyautogui.sleep(3)
-        move_card()
+def count_set_new(SQL_db):
+    con = sqlite3.connect(SQL_db)
+    cur = con.cursor()
+    res = set(cur.execute("SELECT set_num FROM normal_cards"))
+    print(res)
 
 
 def move_card():
