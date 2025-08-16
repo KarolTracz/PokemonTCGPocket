@@ -8,7 +8,6 @@ import sqlite3
 import cv2
 import pyautogui
 
-
 with open('config.json', 'r') as f:
     config = json.load(f)
 
@@ -18,7 +17,21 @@ NUMBER_POS = tuple(config['number_pos'])
 
 def main() -> None:
     move_card_new()
-    count_set_new('PokeDB.db')
+
+    sets = sorted(get_all_sets('PokeDB.db'))
+    print(sets)
+    for set_num in sets:
+        if set_num != 'a1':
+            continue
+        con = sqlite3.connect('PokeDB.db')
+        cur = con.cursor()
+        pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'")
+        for pokemon in pokemons:
+            with open('./temp/screen.png', "wb") as f:
+                subprocess.run(["adb", "exec-out", "screencap", "-p"], stdout=f)
+            break
+        print(pokemons.fetchall())
+
     input()
     print(f"{config=}")
 
@@ -34,8 +47,8 @@ def main() -> None:
         input('CHANGE SET')
 
 
-def count_set(set_starting_pos: int, number_of_cards_in_set: int, star_card: int, shiny_card: int, crown_card: int) -> dict:
-
+def count_set(set_starting_pos: int, number_of_cards_in_set: int, star_card: int, shiny_card: int,
+              crown_card: int) -> dict:
     result = {}
 
     number_templates_dir = r'C:\Users\karol.tracz\PycharmProjects\PokemonTCGPocket\number_images'
@@ -71,7 +84,8 @@ def count_set(set_starting_pos: int, number_of_cards_in_set: int, star_card: int
             number_ -= 1
 
         if compare_img(template_path='./temp/not_obtained.png', image_path='./temp/temp.png') > 0.5:
-            print(f"{round(compare_img(template_path='./temp/not_obtained.png', image_path='./temp/temp.png'), 2)}", end=' ')
+            print(f"{round(compare_img(template_path='./temp/not_obtained.png', image_path='./temp/temp.png'), 2)}",
+                  end=' ')
             print(f"ADD {pokemon_tuple[set_starting_pos][:-5]}=={count}: 0 ")
             result[pokemon_tuple[set_starting_pos][:-5]] = 0
             move_card()
@@ -85,37 +99,34 @@ def count_set(set_starting_pos: int, number_of_cards_in_set: int, star_card: int
             # TO-DO break and go to deep scanning mode for star and crown cards, potentially separated in sets.
 
 
-def count_set_new(SQL_db):
-    sets = get_all_sets(SQL_db)
-    for set_num in sets:
-        con = sqlite3.connect(SQL_db)
-        cur = con.cursor()
-        res = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'")
-        print(res.fetchall())
+def count_set_new():
+    pass
 
 
-def get_all_sets(SQL_db):
-    con = sqlite3.connect(SQL_db)
+def get_all_sets(sql_db):
+    con = sqlite3.connect(sql_db)
     cur = con.cursor()
     res = set(cur.execute("SELECT set_num FROM normal_cards"))
     return_set = {i[0] for i in res}
     return return_set
 
+
 def move_card():
     pyautogui.moveTo(randrange(325, 390), randrange(835, 865))
-    pyautogui.dragTo(randrange(10, 110), randrange(840, 920), duration=(randrange(4, 8)/10))
+    pyautogui.dragTo(randrange(10, 110), randrange(840, 920), duration=(randrange(4, 8) / 10))
 
 
 def move_card_new():
     x1, y1 = randrange(700, 1040), randrange(1850, 2175)
     x2, y2 = randrange(40, 380), randrange(1850, 2175)
 
-    duration = randrange(4, 8)/10 * 1000
+    duration = randrange(4, 8) / 10 * 1000
 
     subprocess.run([
         "adb", "shell", "input", "swipe",
         str(x1), str(y1), str(x2), str(y2), str(int(duration))
     ])
+    sleep(0.2)
 
 
 def compare_img(template_path: str, image_path: str):
