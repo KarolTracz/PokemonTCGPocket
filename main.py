@@ -2,7 +2,6 @@ from random import randrange
 from time import sleep
 import json
 import os
-from typing import Tuple
 import subprocess
 import sqlite3
 
@@ -87,15 +86,25 @@ def count_set(set_starting_pos: int, number_of_cards_in_set: int, star_card: int
 
 
 def count_set_new(SQL_db):
+    sets = get_all_sets(SQL_db)
+    for set_num in sets:
+        con = sqlite3.connect(SQL_db)
+        cur = con.cursor()
+        res = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'")
+        print(res.fetchall())
+
+
+def get_all_sets(SQL_db):
     con = sqlite3.connect(SQL_db)
     cur = con.cursor()
     res = set(cur.execute("SELECT set_num FROM normal_cards"))
-    print(res)
-
+    return_set = {i[0] for i in res}
+    return return_set
 
 def move_card():
     pyautogui.moveTo(randrange(325, 390), randrange(835, 865))
     pyautogui.dragTo(randrange(10, 110), randrange(840, 920), duration=(randrange(4, 8)/10))
+
 
 def move_card_new():
     x1, y1 = randrange(700, 1040), randrange(1850, 2175)
@@ -107,6 +116,7 @@ def move_card_new():
         "adb", "shell", "input", "swipe",
         str(x1), str(y1), str(x2), str(y2), str(int(duration))
     ])
+
 
 def compare_img(template_path: str, image_path: str):
     template = cv2.imread(template_path, cv2.IMREAD_GRAYSCALE)
