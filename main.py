@@ -17,39 +17,39 @@ def main() -> None:
     sets = get_all_sets(sql_db='PokeDB.db')
 
     for set_num in sets:
+        if set_num == 'a1':
+            continue
         con = sqlite3.connect('PokeDB.db')
         cur = con.cursor()
         pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
 
         for pokemon in pokemons:
-
             screenshot_and_crop_card()
             move_card()
+            card_amount = count_card(threshold=0.95)
 
-            number_threshold = 0.95
-            for number in listdir('images/numbers'):
-                num_img = path_join('images/numbers', number)
-                try:
-                    confidence = compare_img(template_path=num_img, image_path='./temp/number.png')
-                except Exception as err:
-                    cur.execute(f"UPDATE normal_cards SET amount = 0 WHERE id = {pokemon[0]};")
-                    print(f'confidence of {pokemon[1]=} set to 0 because of error{err=}')
-                    confidence = 0
-                if confidence > number_threshold:
-                    print(f'{pokemon[1]} {int(number[:2])}')
-                    cur.execute(f"UPDATE normal_cards SET amount = {int(number[:2])} WHERE id = {pokemon[0]};")
-                    break
+            print(pokemon[1], card_amount)
 
-            if compare_img(template_path='images/not_obtained.png', image_path='./temp/screen.png') > 0.5:
-                print(f'{pokemon[1]} SET = 0, because not obtained ')
+            if card_amount == 0:
                 cur.execute(f"UPDATE normal_cards SET amount = 0 WHERE id = {pokemon[0]};")
+            elif card_amount >= 1:
+                cur.execute(f"UPDATE normal_cards SET amount = {card_amount} WHERE id = {pokemon[0]};")
+            else:
+                print(f"UNEXPECTED BAHAVIOR OF count_card() -> {card_amount}")
 
         con.commit()
         con.close()
 
 
-def count_set_new():
-    pass
+def count_card(threshold=0.95) -> int:
+    for number in listdir('images/numbers'):
+        num_img = path_join('images/numbers', number)
+        confidence = compare_img(template_path=num_img, image_path='./temp/number.png')
+        if confidence > threshold:
+            return int(number[:2])
+
+    if compare_img(template_path='images/not_obtained.png', image_path='./temp/screen.png') > 0.5:
+        return 0
 
 
 def screenshot_and_crop_card() -> None:
