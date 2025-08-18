@@ -17,7 +17,7 @@ def main() -> None:
     sets = get_all_sets(sql_db='PokeDB.db')
 
     for set_num in sets:
-        if set_num == 'a1':
+        if input(f"prep for {set_num}. Input 'c' to skip this set. For count set press enter ").lower() == 'c':
             continue
         con = sqlite3.connect('PokeDB.db')
         cur = con.cursor()
@@ -25,11 +25,21 @@ def main() -> None:
 
         for pokemon in pokemons:
             screenshot_and_crop_card()
-            move_card()
             card_amount = count_card(threshold=0.95)
+            move_card()
 
             print(pokemon[1], card_amount)
 
+            if card_amount is None:
+                print("* * * UNEXPECTED BAHAVIOR * * *")
+                print("card_amount = None")
+                user_input = input(f"Please check last screenshot, if it is not a card setup: \n{pokemon}\nand input 'done' ")
+                if user_input.lower() == 'done':
+                    screenshot_and_crop_card()
+                    card_amount = count_card(threshold=0.95)
+                    print(pokemon[1], card_amount)
+                    sleep(1)
+                    move_card()
             if card_amount == 0:
                 cur.execute(f"UPDATE normal_cards SET amount = 0 WHERE id = {pokemon[0]};")
             elif card_amount >= 1:
@@ -70,16 +80,16 @@ def get_all_sets(sql_db):
 
 
 def move_card():
-    x1, y1 = randrange(700, 1040), randrange(1850, 2175)
+    x1, y1 = randrange(700, 1000), randrange(1850, 2175)
     x2, y2 = randrange(40, 380), randrange(1850, 2175)
 
-    duration = randrange(4, 8) / 10 * 1000
+    duration = randrange(6, 8) / 10 * 1000
 
     run([
         "adb", "shell", "input", "swipe",
         str(x1), str(y1), str(x2), str(y2), str(int(duration))
     ])
-    sleep(0.1)
+    sleep(0.2)
 
 
 def compare_img(template_path: str, image_path: str):
