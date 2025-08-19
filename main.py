@@ -5,7 +5,6 @@ from os import listdir
 from os.path import join as path_join
 from subprocess import run
 import sqlite3
-from enum import IntEnum
 
 import cv2
 from PIL import Image
@@ -71,17 +70,21 @@ Input number
 
     elif user_input == 2:
         con = sqlite3.connect('PokeDB.db')
+        con.row_factory = sqlite3.Row
         cur = con.cursor()
         pokemons = cur.execute(f"SELECT * FROM normal_cards").fetchall()
-        not_obtain_pokemons = []
+        not_obtain_pokemons = {}
         for pokemon in pokemons:
 
-            if pokemon[PokemonFields.AMOUNT] == None:
-                print('You need to scan your colection, we dont have data for amount you have')
-            if pokemon[PokemonFields.AMOUNT] == 0 and pokemon[PokemonFields.RARITY] in ('1_diamond', '2_diamond', '3_diamond', '4_diamond'):
-                not_obtain_pokemons.append(pokemon)
-        for pokemon in not_obtain_pokemons:
-            print(pokemon)
+            if pokemon['amount'] is None:
+                print('You need to scan your collection, we dont have data for amount you have')
+            if pokemon['amount'] == 0 and pokemon['rarity'] in ('1_diamond', '2_diamond', '3_diamond', '4_diamond'):
+                if pokemon['set_num'] not in not_obtain_pokemons:
+                    not_obtain_pokemons[pokemon['set_num']] = 1
+                else:
+                    not_obtain_pokemons[pokemon['set_num']] += 1
+        for k, v in not_obtain_pokemons.items():
+            print(k, v)
 
 
 
@@ -141,17 +144,6 @@ def compare_img(template_path: str, image_path: str):
     _, max_val, _, _ = cv2.minMaxLoc(result)
 
     return max_val
-
-
-class PokemonFields(IntEnum):
-    ID = 0
-    NAME = 1
-    SET_NUM = 2
-    NUM = 3
-    PACK = 4
-    RARITY = 5
-    AMOUNT = 6
-    STAGE = 7
 
 
 if __name__ == '__main__':
