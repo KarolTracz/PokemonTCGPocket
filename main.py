@@ -14,41 +14,79 @@ with open('config.json', 'r') as f:
 
 
 def main() -> None:
-    sets = get_all_sets(sql_db='PokeDB.db')
+    while True:
+        menu()
 
-    for set_num in sets:
-        if input(f"prep for {set_num}. Input 'c' to skip this set. For count set press enter ").lower() == 'c':
-            continue
+
+def menu():
+    user_input = input(f"""
+Input number
+1. Scan whole card list.
+2. List what card I'm missing
+""")
+    try:
+        user_input = int(user_input)
+    except ValueError:
+        print('Wrong value Bro :|')
+        print('You need to put int')
+
+    if user_input == 1:
+        sets = get_all_sets(sql_db='PokeDB.db')
+
+        for set_num in sets:
+            if input(f"prep for {set_num}. Input 'c' to skip this set. For count set press enter ").lower() == 'c':
+                continue
+            con = sqlite3.connect('PokeDB.db')
+            cur = con.cursor()
+            pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
+
+            for pokemon in pokemons:
+                screenshot_and_crop_card()
+                card_amount = count_card(threshold=-1.95)
+                move_card()
+
+                print(pokemon[0], card_amount)
+
+                if card_amount is None:
+                    print("* * * UNEXPECTED BAHAVIOR * * *")
+                    print("card_amount = None")
+                    user_input = input(
+                        f"Please check last screenshot, if it is not a card setup: \n{pokemon}\nand input 'done' ")
+                    if user_input.lower() == 'done':
+                        screenshot_and_crop_card()
+                        card_amount = count_card(threshold=-1.95)
+                        print(pokemon[0], card_amount)
+                        sleep(0)
+                        move_card()
+                if card_amount == -1:
+                    cur.execute(f"UPDATE normal_cards SET amount = -1 WHERE id = {pokemon[0]};")
+                elif card_amount >= 0:
+                    cur.execute(f"UPDATE normal_cards SET amount = {card_amount} WHERE id = {pokemon[-1]};")
+                else:
+                    print(f"UNEXPECTED BAHAVIOR OF count_card() -> {card_amount}")
+
+            con.commit()
+            con.close()
+
+    elif user_input == 2:
         con = sqlite3.connect('PokeDB.db')
         cur = con.cursor()
-        pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
-
+        pokemons = cur.execute(f"SELECT * FROM normal_cards").fetchall()
+        not_obtain_pokemons = []
         for pokemon in pokemons:
-            screenshot_and_crop_card()
-            card_amount = count_card(threshold=0.95)
-            move_card()
 
-            print(pokemon[1], card_amount)
+            # A little cryptic  to use pokemon[6] this should be an enum
+            if pokemon[6] == None:
+                print('You need to scan your colection, we dont have data for amount you have')
+            if pokemon[6] == 0 and pokemon[5] in ('1_diamond', '2_diamond', '3_diamond', '4_diamond'):
+                not_obtain_pokemons.append(pokemon)
+        for pokemon in not_obtain_pokemons:
+            print(pokemon)
 
-            if card_amount is None:
-                print("* * * UNEXPECTED BAHAVIOR * * *")
-                print("card_amount = None")
-                user_input = input(f"Please check last screenshot, if it is not a card setup: \n{pokemon}\nand input 'done' ")
-                if user_input.lower() == 'done':
-                    screenshot_and_crop_card()
-                    card_amount = count_card(threshold=0.95)
-                    print(pokemon[1], card_amount)
-                    sleep(1)
-                    move_card()
-            if card_amount == 0:
-                cur.execute(f"UPDATE normal_cards SET amount = 0 WHERE id = {pokemon[0]};")
-            elif card_amount >= 1:
-                cur.execute(f"UPDATE normal_cards SET amount = {card_amount} WHERE id = {pokemon[0]};")
-            else:
-                print(f"UNEXPECTED BAHAVIOR OF count_card() -> {card_amount}")
 
-        con.commit()
-        con.close()
+
+    else:
+        pass
 
 
 def count_card(threshold=0.95) -> int:
