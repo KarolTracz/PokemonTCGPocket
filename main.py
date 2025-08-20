@@ -8,7 +8,6 @@ import sqlite3
 
 import cv2
 from PIL import Image
-from numpy.matlib import zeros
 
 with open('config.json', 'r') as f:
     config = json_load(f)
