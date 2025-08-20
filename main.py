@@ -1,6 +1,6 @@
 from random import randrange
 from time import sleep
-from json import load as json_load
+from json import load, dumps
 from os import listdir
 from os.path import join as path_join
 from subprocess import run
@@ -10,7 +10,7 @@ import cv2
 from PIL import Image
 
 with open('config.json', 'r') as f:
-    config = json_load(f)
+    config = load(f)
 
 
 def main() -> None:
@@ -22,7 +22,8 @@ def menu() -> None:
     user_input = input(f"""
 Input number
 1. Scan whole card list.
-2. List what card I'm missing
+2. List amount of missing 1-4 diamond cards 
+3. Config setup
 """)
     try:
         user_input = int(user_input)
@@ -34,9 +35,27 @@ Input number
         count_all_cards()
     elif user_input == 2:
         list_missing_cards()
+    elif user_input == 3:
+        config_setup()
 
     else:
         pass
+
+# Prob better to do this as a db instead of config, fine for now as a shortcut.
+def config_setup():
+    with open('config.json', 'r') as f:
+        config = load(f)
+        new_config = config.copy()
+    for set_num in new_config.keys():
+        points = input(f'input how much "Pack Point Exchange" you have for {set_num} ')
+        try:
+            new_config[set_num]['points'] = int(points)
+        except ValueError:
+            print('You need to provide')
+    with open('config.json', 'w') as f:
+        f.write(dumps(new_config, indent=4))
+
+
 
 
 def list_missing_cards() -> None:
