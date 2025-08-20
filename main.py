@@ -8,6 +8,7 @@ import sqlite3
 
 import cv2
 from PIL import Image
+from numpy.matlib import zeros
 
 with open('config.json', 'r') as f:
     config = json_load(f)
@@ -18,7 +19,7 @@ def main() -> None:
         menu()
 
 
-def menu():
+def menu() -> None:
     user_input = input(f"""
 Input number
 1. Scan whole card list.
@@ -31,68 +32,77 @@ Input number
         print('You need to put int')
 
     if user_input == 1:
-        sets = get_all_sets(sql_db='PokeDB.db')
-
-        for set_num in sets:
-            if input(f"prep for {set_num}. Input 'c' to skip this set. For count set press enter ").lower() == 'c':
-                continue
-            con = sqlite3.connect('PokeDB.db')
-            cur = con.cursor()
-            pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
-
-            for pokemon in pokemons:
-                screenshot_and_crop_card()
-                card_amount = count_card(threshold=-1.95)
-                move_card()
-
-                print(pokemon[0], card_amount)
-
-                if card_amount is None:
-                    print("* * * UNEXPECTED BAHAVIOR * * *")
-                    print("card_amount = None")
-                    user_input = input(
-                        f"Please check last screenshot, if it is not a card setup: \n{pokemon}\nand input 'done' ")
-                    if user_input.lower() == 'done':
-                        screenshot_and_crop_card()
-                        card_amount = count_card(threshold=-1.95)
-                        print(pokemon[0], card_amount)
-                        sleep(0)
-                        move_card()
-                if card_amount == -1:
-                    cur.execute(f"UPDATE normal_cards SET amount = -1 WHERE id = {pokemon[0]};")
-                elif card_amount >= 0:
-                    cur.execute(f"UPDATE normal_cards SET amount = {card_amount} WHERE id = {pokemon[-1]};")
-                else:
-                    print(f"UNEXPECTED BAHAVIOR OF count_card() -> {card_amount}")
-
-            con.commit()
-            con.close()
-
+        count_all_cards()
     elif user_input == 2:
-        con = sqlite3.connect('PokeDB.db')
-        con.row_factory = sqlite3.Row
-        cur = con.cursor()
-        pokemons = cur.execute(f"SELECT * FROM normal_cards").fetchall()
-        not_obtain_pokemons = {}
-        for pokemon in pokemons:
-
-            if pokemon['amount'] is None:
-                print('You need to scan your collection, we dont have data for amount you have')
-            if pokemon['amount'] == 0 and pokemon['rarity'] in ('1_diamond', '2_diamond', '3_diamond', '4_diamond'):
-                if pokemon['set_num'] not in not_obtain_pokemons:
-                    not_obtain_pokemons[pokemon['set_num']] = 1
-                else:
-                    not_obtain_pokemons[pokemon['set_num']] += 1
-        for k, v in not_obtain_pokemons.items():
-            print(k, v)
-
-
+        list_missing_cards()
 
     else:
         pass
 
 
-def count_card(threshold=0.95) -> int:
+def list_missing_cards() -> None:
+    con = sqlite3.connect('PokeDB.db')
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    pokemons = cur.execute(f"SELECT * FROM normal_cards").fetchall()
+    not_obtain_pokemons = {}
+    seek_rarity = ('1_diamond', '2_diamond', '3_diamond', '4_diamond')
+    for pokemon in pokemons:
+
+        if pokemon['amount'] is None:
+            print('You need to scan your whole collection, we dont have data for amount you have')
+            break
+        if pokemon['amount'] == 0 and pokemon['rarity'] in seek_rarity:
+            if pokemon['set_num'] not in not_obtain_pokemons:
+                not_obtain_pokemons[pokemon['set_num']] = {k: v for k, v in zip(seek_rarity, (0 for _ in range(len(seek_rarity))))}
+            else:
+                not_obtain_pokemons[pokemon['set_num']][pokemon['rarity']] += 1
+    for set, values in not_obtain_pokemons.items():
+        print(set)
+        for rarity, amount in values.items():
+            print(f'{rarity}\t- {amount}')
+    con.close()
+
+
+def count_all_cards() -> None:
+    sets = get_all_sets(sql_db='PokeDB.db')
+
+    for set_num in sets:
+        if input(f"prep for {set_num}. Input 'c' to skip this set. For count set press enter ").lower() == 'c':
+            continue
+        con = sqlite3.connect('PokeDB.db')
+        cur = con.cursor()
+        pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
+
+        for pokemon in pokemons:
+            screenshot_and_crop_card()
+            card_amount = count_card(threshold=-1.95)
+            move_card()
+
+            print(pokemon[0], card_amount)
+
+            if card_amount is None:
+                print("card_amount = None")
+                user_input = input(
+                    f"Please check last screenshot, if it is not a card setup: \n{pokemon}\nand input 'done' ")
+                if user_input.lower() == 'done':
+                    screenshot_and_crop_card()
+                    card_amount = count_card(threshold=-1.95)
+                    print(pokemon[0], card_amount)
+                    sleep(1)
+                    move_card()
+            if card_amount == 0:
+                cur.execute(f"UPDATE normal_cards SET amount = 0 WHERE id = {pokemon[0]};")
+            elif card_amount >= 1:
+                cur.execute(f"UPDATE normal_cards SET amount = {card_amount} WHERE id = {pokemon[0]};")
+            else:
+                print(f"UNEXPECTED BAHAVIOR OF count_card() -> {card_amount}")
+
+        con.commit()
+        con.close()
+
+
+def count_card(threshold: float = 0.95) -> int | None:
     for number in listdir('images/numbers'):
         num_img = path_join('images/numbers', number)
         confidence = compare_img(template_path=num_img, image_path='./temp/number.png')
@@ -101,6 +111,8 @@ def count_card(threshold=0.95) -> int:
 
     if compare_img(template_path='images/not_obtained.png', image_path='./temp/screen.png') > 0.5:
         return 0
+    else:
+        return None
 
 
 def screenshot_and_crop_card() -> None:
@@ -112,7 +124,7 @@ def screenshot_and_crop_card() -> None:
     cropped_img.save("./temp/number.png")
 
 
-def get_all_sets(sql_db):
+def get_all_sets(sql_db: str):
     con = sqlite3.connect(sql_db)
     cur = con.cursor()
     res = set(cur.execute("SELECT set_num FROM normal_cards"))
