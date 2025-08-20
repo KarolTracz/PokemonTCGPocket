@@ -1,62 +1,58 @@
 {
-  "card_pos": [25, 225, 360, 500],
-  "number_pos": [85, 770, 30, 30],
-  "sets" : {
-    "a1": {
-      "start": 0,
-      "owned": 212,
-      "all": 226,
-      "star": 26,
-      "shiny": 0,
-      "crown": 1
-    },
-    "a1a": {
-      "start": 286,
-      "owned": 68,
-      "all": 68,
-      "star": 4,
-      "shiny": 0,
-      "crown": 0
-    },
-    "a2": {
-      "start": 372,
-      "owned": 136,
-      "all": 155,
-      "star": 7,
-      "shiny": 0,
-      "crown": 0
-    },
-    "a2a": {
-      "start": 579,
-      "owned": 64,
-      "all": 75,
-      "star": 5,
-      "shiny": 0,
-      "crown": 0
-    },
-    "a2b": {
-      "start": 675,
-      "owned": 65,
-      "all": 72,
-      "star": 9,
-      "shiny": 0,
-      "crown": 0
-    },
-    "a3": {
-      "start": 786,
-      "owned": 131,
-      "all": 155,
-      "star": 9,
-      "shiny": 3,
-      "crown": 1
-    },
-    "a3a": {
-      "start": 1025,
-      "owned": 64,
-      "all": 69,
-      "star": 7,
-      "shiny": 4,
-      "crown": 0
-    }
+  "a1": {
+    "all": 226,
+    "star": 0,
+    "shiny": 0,
+    "crown": 0,
+    "points": 0
+  },
+  "a1a": {
+    "all": 68,
+    "star": 0,
+    "shiny": 0,
+    "crown": 0,
+    "points": 0
+  },
+  "a2": {
+    "all": 155,
+    "star": 0,
+    "shiny": 0,
+    "crown": 0,
+    "points": 0
+  },
+  "a2a": {
+    "all": 75,
+    "star": 0,
+    "shiny": 0,
+    "crown": 0,
+    "points": 0
+  },
+  "a2b": {
+    "all": 72,
+    "star": 0,
+    "shiny": 0,
+    "crown": 0,
+    "points": 0
+  },
+  "a3": {
+    "all": 155,
+    "star": 0,
+    "shiny": 0,
+    "crown": 0,
+    "points": 0
+  },
+  "a3a": {
+    "all": 69,
+    "star": 0,
+    "shiny": 0,
+    "crown": 0,
+    "points": 0
+  },
+  "a4": {
+    "all": 161,
+    "star": 0,
+    "shiny": 0,
+    "crown": 0,
+    "points": 0
   }
 }
