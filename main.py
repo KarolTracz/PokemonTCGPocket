@@ -14,8 +14,13 @@ with open('config.json', 'r') as f:
 
 
 def main() -> None:
-    while True:
-        menu()
+    sets = get_all_sets(sql_db='PokeDB.db')
+    for set_num in sets:
+        print(f'{set_num}')
+        print(f'\t{sum_cards(set_num=set_num)}')
+        print(f'\t{sum_cards_by_rarity(set_num=set_num)}')
+    # while True:
+    #     menu()
 
 
 def menu() -> None:
@@ -40,6 +45,30 @@ Input number
 
     else:
         pass
+
+
+def sum_cards_by_rarity(set_num: str) -> dict:
+    con = sqlite3.connect('PokeDB.db')
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    pokemons = cur.execute(f"SELECT rarity, amount FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
+
+    return_dict = {}
+    for pokemon in pokemons:
+        if pokemon['rarity'] not in return_dict:
+            return_dict[pokemon['rarity']] = pokemon['amount']
+        else:
+            return_dict[pokemon['rarity']] += pokemon['amount']
+    con.close()
+    return return_dict
+
+def sum_cards(set_num: str) -> int:
+    con = sqlite3.connect('PokeDB.db')
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    pokemons = cur.execute(f"SELECT amount FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
+    return sum([pokemon['amount'] for pokemon in pokemons])
+
 
 # Prob better to do this as a db instead of config, fine for now as a shortcut.
 def config_setup():
@@ -72,11 +101,13 @@ def list_missing_cards() -> None:
             break
         if pokemon['amount'] == 0 and pokemon['rarity'] in seek_rarity:
             if pokemon['set_num'] not in not_obtain_pokemons:
-                not_obtain_pokemons[pokemon['set_num']] = {k: v for k, v in zip(seek_rarity, (0 for _ in range(len(seek_rarity))))}
+                not_obtain_pokemons[pokemon['set_num']] = {
+                    k: v for k, v in zip(seek_rarity, (0 for _ in range(len(seek_rarity))))
+                }
             else:
                 not_obtain_pokemons[pokemon['set_num']][pokemon['rarity']] += 1
-    for set, values in not_obtain_pokemons.items():
-        print(set)
+    for set_num, values in not_obtain_pokemons.items():
+        print(set_num)
         for rarity, amount in values.items():
             print(f'{rarity}\t- {amount}')
     con.close()
