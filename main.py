@@ -1,3 +1,5 @@
+import random
+from collections import Counter
 from random import randrange
 from time import sleep
 from json import load, dumps
@@ -14,11 +16,16 @@ with open('config.json', 'r') as f:
 
 
 def main() -> None:
-    sets = get_all_sets(sql_db='PokeDB.db')
-    for set_num in sets:
-        print(f'{set_num}')
-        print(f'\t{sum_cards(set_num=set_num)}')
-        print(f'\t{sum_cards_by_rarity(set_num=set_num)}')
+    gen = roll_4th_card()
+    results = [next(gen) for _ in range(1_000_000)]
+    counts = Counter(results)
+    print(counts)
+
+    # sets = get_all_sets(sql_db='PokeDB.db')
+    # for set_num in sets:
+    #     print(f'{set_num}')
+    #     print(f'\t{sum_cards(set_num=set_num)}')
+    #     print(f'\t{sum_cards_by_rarity(set_num=set_num)}')
     # while True:
     #     menu()
 
@@ -45,6 +52,20 @@ Input number
 
     else:
         pass
+
+
+def roll_4th_card():
+    offering_rates = {'1_diamond': 0, '2_diamond': 0.89, '3_diamond': 0.04952, '4_diamond': 0.01667, '1_star': 0.02572, '2_star': 0.005, '3_star': 0.00222, '1_shiny': 0.00714, '2_shiny': 0.00333, 'crown': 0.00040}
+
+    items, probs = zip(*offering_rates.items())
+    cumulative = [sum(probs[:i+1]) for i in range(len(probs))]
+
+    while True:
+        roll = random.random()
+        for item, threshold in zip(items, cumulative):
+            if roll < threshold:
+                yield item
+                break
 
 
 def sum_cards_by_rarity(set_num: str) -> dict:
