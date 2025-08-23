@@ -16,11 +16,7 @@ with open('config.json', 'r') as f:
 
 
 def main() -> None:
-    gen = roll_4th_card()
-    results = [next(gen) for _ in range(1_000_000)]
-    counts = Counter(results)
-    print(counts)
-
+    print(open_X_packs(ammount=10_000))
     # sets = get_all_sets(sql_db='PokeDB.db')
     # for set_num in sets:
     #     print(f'{set_num}')
@@ -52,6 +48,31 @@ Input number
 
     else:
         pass
+
+def open_X_packs(ammount: int):
+    sum_list= ['1_diamond' for _ in range(3*ammount)]
+
+    gen_4 = roll_4th_card()
+    gen_5 = roll_5th_card()
+    for _ in range(ammount):
+        sum_list.append(next(gen_4))
+        sum_list.append(next(gen_5))
+
+    return Counter(sum_list)
+
+
+
+
+def roll_5th_card():
+    offering_rates = {'1_diamond': 0, '2_diamond': 0.56 , '3_diamond': 0.19810, '4_diamond': 0.06664, '1_star': 0.10288, '2_star': 0.02000, '3_star': 0.00888, '1_shiny': 0.02857, '2_shiny': 0.01333, 'crown': 0.00160}
+    items, probs = zip(*offering_rates.items())
+    cumulative = [sum(probs[:i+1]) for i in range(len(probs))]
+    while True:
+        roll = random.random()
+        for item, threshold in zip(items, cumulative):
+            if roll < threshold:
+                yield item
+                break
 
 
 def roll_4th_card():
