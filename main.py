@@ -16,7 +16,7 @@ with open('config.json', 'r') as f:
 
 
 def main() -> None:
-    print(open_X_packs(ammount=10_000))
+    print(open_X_packs(amount=2_500))
     # sets = get_all_sets(sql_db='PokeDB.db')
     # for set_num in sets:
     #     print(f'{set_num}')
@@ -27,12 +27,7 @@ def main() -> None:
 
 
 def menu() -> None:
-    user_input = input(f"""
-Input number
-1. Scan whole card list.
-2. List amount of missing 1-4 diamond cards 
-3. Config setup
-""")
+    user_input = input(f"Input number\n1. Scan whole card list\n2. List amount of missing 1-4 diamond cards\n3. Config setup ")
     try:
         user_input = int(user_input)
     except ValueError:
@@ -49,12 +44,12 @@ Input number
     else:
         pass
 
-def open_X_packs(ammount: int):
-    sum_list= ['1_diamond' for _ in range(3*ammount)]
+def open_X_packs(amount: int):
+    sum_list= ['1_diamond' for _ in range(3*amount)]
 
     gen_4 = roll_4th_card()
     gen_5 = roll_5th_card()
-    for _ in range(ammount):
+    for _ in range(amount):
         sum_list.append(next(gen_4))
         sum_list.append(next(gen_5))
 
@@ -65,6 +60,8 @@ def open_X_packs(ammount: int):
 
 def roll_5th_card():
     offering_rates = {'1_diamond': 0, '2_diamond': 0.56 , '3_diamond': 0.19810, '4_diamond': 0.06664, '1_star': 0.10288, '2_star': 0.02000, '3_star': 0.00888, '1_shiny': 0.02857, '2_shiny': 0.01333, 'crown': 0.00160}
+    offering_rates_2 = {'1_diamond': 0, '2_diamond': 0.60, '3_diamond': 0.20, '4_diamond': 0.06664, '1_star': 0.10288, '2_star': 0.02, '3_star': 0.00888, 'crown': 0.00160}
+
     items, probs = zip(*offering_rates.items())
     cumulative = [sum(probs[:i+1]) for i in range(len(probs))]
     while True:
@@ -77,7 +74,7 @@ def roll_5th_card():
 
 def roll_4th_card():
     offering_rates = {'1_diamond': 0, '2_diamond': 0.89, '3_diamond': 0.04952, '4_diamond': 0.01667, '1_star': 0.02572, '2_star': 0.005, '3_star': 0.00222, '1_shiny': 0.00714, '2_shiny': 0.00333, 'crown': 0.00040}
-
+    offering_rates_2 = {'1_diamond': 0, '2_diamond': 0.90, '3_diamond': 0.05, '4_diamond': 0.01666, '1_star': 0.02572, '2_star': 0.005, '3_star': 0.00222, 'crown': 0.0004}
     items, probs = zip(*offering_rates.items())
     cumulative = [sum(probs[:i+1]) for i in range(len(probs))]
 
