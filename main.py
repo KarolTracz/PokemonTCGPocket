@@ -16,8 +16,8 @@ with open('config.json', 'r') as f:
 
 
 def main() -> None:
-    for i in range(100):
-        print(open_X_packs(amount=2_500))
+    print(open_X_packs(amount=1_000, have_pack_shinny=True))
+    print(open_X_packs(amount=1_000, have_pack_shinny=False))
 
     # sets = get_all_sets(sql_db='PokeDB.db')
     # for set_num in sets:
@@ -46,11 +46,16 @@ def menu() -> None:
     else:
         pass
 
-def open_X_packs(amount: int):
+def open_X_packs(amount: int, have_pack_shinny: bool):
     sum_list= ['1_diamond' for _ in range(3*amount)]
 
-    gen_4 = roll_4th_card()
-    gen_5 = roll_5th_card()
+    if have_pack_shinny:
+        gen_4 = roll_4th_card(is_shinny=True)
+        gen_5 = roll_5th_card(is_shinny=True)
+    else:
+        gen_4 = roll_4th_card(is_shinny=False)
+        gen_5 = roll_5th_card(is_shinny=False)
+
     for _ in range(amount):
         sum_list.append(next(gen_4))
         sum_list.append(next(gen_5))
@@ -60,9 +65,11 @@ def open_X_packs(amount: int):
 
 
 
-def roll_5th_card():
-    offering_rates = {'1_diamond': 0, '2_diamond': 0.56 , '3_diamond': 0.19810, '4_diamond': 0.06664, '1_star': 0.10288, '2_star': 0.02000, '3_star': 0.00888, '1_shiny': 0.02857, '2_shiny': 0.01333, 'crown': 0.00160}
-    offering_rates_2 = {'1_diamond': 0, '2_diamond': 0.60, '3_diamond': 0.20, '4_diamond': 0.06664, '1_star': 0.10288, '2_star': 0.02, '3_star': 0.00888, 'crown': 0.00160}
+def roll_5th_card(is_shinny: bool):
+    if is_shinny:
+        offering_rates = {'1_diamond': 0, '2_diamond': 0.56 , '3_diamond': 0.19810, '4_diamond': 0.06664, '1_star': 0.10288, '2_star': 0.02, '3_star': 0.00888, '1_shiny': 0.02857, '2_shiny': 0.01333, 'crown': 0.00160}
+    else:
+        offering_rates = {'1_diamond': 0, '2_diamond': 0.60, '3_diamond': 0.20, '4_diamond': 0.06664, '1_star': 0.10288, '2_star': 0.02, '3_star': 0.00888, 'crown': 0.00160}
 
     items, probs = zip(*offering_rates.items())
     cumulative = [sum(probs[:i+1]) for i in range(len(probs))]
@@ -74,9 +81,11 @@ def roll_5th_card():
                 break
 
 
-def roll_4th_card():
-    offering_rates = {'1_diamond': 0, '2_diamond': 0.89, '3_diamond': 0.04952, '4_diamond': 0.01667, '1_star': 0.02572, '2_star': 0.005, '3_star': 0.00222, '1_shiny': 0.00714, '2_shiny': 0.00333, 'crown': 0.00040}
-    offering_rates_2 = {'1_diamond': 0, '2_diamond': 0.90, '3_diamond': 0.05, '4_diamond': 0.01666, '1_star': 0.02572, '2_star': 0.005, '3_star': 0.00222, 'crown': 0.0004}
+def roll_4th_card(is_shinny: bool):
+    if is_shinny:
+        offering_rates = {'1_diamond': 0, '2_diamond': 0.89, '3_diamond': 0.04952, '4_diamond': 0.01667, '1_star': 0.02572, '2_star': 0.005, '3_star': 0.00222, '1_shiny': 0.00714, '2_shiny': 0.00333, 'crown': 0.00040}
+    else:
+        offering_rates = {'1_diamond': 0, '2_diamond': 0.90, '3_diamond': 0.05, '4_diamond': 0.01666, '1_star': 0.02572, '2_star': 0.005, '3_star': 0.00222, 'crown': 0.0004}
     items, probs = zip(*offering_rates.items())
     cumulative = [sum(probs[:i+1]) for i in range(len(probs))]
 
