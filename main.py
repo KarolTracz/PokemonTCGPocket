@@ -16,7 +16,9 @@ with open('config.json', 'r') as f:
 
 
 def main() -> None:
-    print(open_X_packs(amount=2_500))
+    for i in range(100):
+        print(open_X_packs(amount=2_500))
+
     # sets = get_all_sets(sql_db='PokeDB.db')
     # for set_num in sets:
     #     print(f'{set_num}')
@@ -164,10 +166,10 @@ def count_all_cards() -> None:
 
         for pokemon in pokemons:
             screenshot_and_crop_card()
-            card_amount = count_card(threshold=-1.95)
+            card_amount = count_card(threshold=0.95)
             move_card()
 
-            print(pokemon[0], card_amount)
+            print(pokemon[1], card_amount)
 
             if card_amount is None:
                 print("card_amount = None")
@@ -175,8 +177,8 @@ def count_all_cards() -> None:
                     f"Please check last screenshot, if it is not a card setup: \n{pokemon}\nand input 'done' ")
                 if user_input.lower() == 'done':
                     screenshot_and_crop_card()
-                    card_amount = count_card(threshold=-1.95)
-                    print(pokemon[0], card_amount)
+                    card_amount = count_card(threshold=0.95)
+                    print(pokemon[1], card_amount)
                     sleep(1)
                     move_card()
             if card_amount == 0:
