@@ -18,12 +18,18 @@ with open('config.json', 'r') as f:
 def main() -> None:
     print(open_X_packs(amount=1_000, have_pack_shinny=True))
     print(open_X_packs(amount=1_000, have_pack_shinny=False))
-
-    # sets = get_all_sets(sql_db='PokeDB.db')
-    # for set_num in sets:
+    sets = get_all_sets(sql_db='PokeDB.db')
+    sum_by_set = {}
+    for set_num in sets:
     #     print(f'{set_num}')
     #     print(f'\t{sum_cards(set_num=set_num)}')
-    #     print(f'\t{sum_cards_by_rarity(set_num=set_num)}')
+    #     print(f'{sum_cards_by_rarity(set_num=set_num)}')
+
+        sum_by_set[set_num] = sum_cards_by_rarity(set_num=set_num)
+
+    print(sum_by_set)
+    for k, v in sum_by_set.items():
+        print(f"{k}, \t{v['1_diamond'] // 3 = }, {v['1_diamond'] // 3 * 5=}")
     # while True:
     #     menu()
 
@@ -46,6 +52,7 @@ def menu() -> None:
     else:
         pass
 
+
 def open_X_packs(amount: int, have_pack_shinny: bool):
     sum_list= ['1_diamond' for _ in range(3*amount)]
 
@@ -61,8 +68,6 @@ def open_X_packs(amount: int, have_pack_shinny: bool):
         sum_list.append(next(gen_5))
 
     return Counter(sum_list)
-
-
 
 
 def roll_5th_card(is_shinny: bool):
@@ -112,6 +117,7 @@ def sum_cards_by_rarity(set_num: str) -> dict:
     con.close()
     return return_dict
 
+
 def sum_cards(set_num: str) -> int:
     con = sqlite3.connect('PokeDB.db')
     con.row_factory = sqlite3.Row
@@ -133,8 +139,6 @@ def config_setup():
             print('You need to provide')
     with open('config.json', 'w') as f:
         f.write(dumps(new_config, indent=4))
-
-
 
 
 def list_missing_cards() -> None:
