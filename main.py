@@ -7,6 +7,7 @@ from os import listdir
 from os.path import join as path_join
 from subprocess import run
 import sqlite3
+import matplotlib
 
 import cv2
 from PIL import Image
@@ -16,9 +17,12 @@ with open('config.json', 'r') as f:
 
 
 def main() -> None:
-    print(open_X_packs(amount=1_000, have_pack_shinny=True))
-    print(open_X_packs(amount=1_000, have_pack_shinny=False))
     sets = get_all_sets(sql_db='PokeDB.db')
+    overall_counts, avg_per_card, avg_per_pack = simulate_many(trials=10_000, packs_per_trial=1000, have_pack_shinny=False)
+    print(overall_counts)
+    print(avg_per_card)
+    print(avg_per_pack)
+    print()
     sum_by_set = {}
     for set_num in sets:
     #     print(f'{set_num}')
@@ -51,6 +55,20 @@ def menu() -> None:
 
     else:
         pass
+
+def simulate_many(trials: int, packs_per_trial: int, have_pack_shinny: bool):
+    overall_counts = Counter()
+
+    for _ in range(trials):
+        overall_counts.update(open_X_packs(packs_per_trial, have_pack_shinny))
+
+    total_packs = trials * packs_per_trial
+    total_cards = total_packs * 5
+
+    avg_per_card = {k: v / total_cards for k, v in overall_counts.items()}
+    avg_per_pack = {k: v / total_packs for k, v in overall_counts.items()}
+
+    return overall_counts, avg_per_card, avg_per_pack
 
 
 def open_X_packs(amount: int, have_pack_shinny: bool):
