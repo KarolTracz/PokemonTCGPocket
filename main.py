@@ -21,15 +21,21 @@ def main() -> None:
     sets = get_all_sets(sql_db='PokeDB.db')
     sum_by_set = {}
     for set_num in sets:
-    #     print(f'{set_num}')
-    #     print(f'\t{sum_cards(set_num=set_num)}')
-    #     print(f'{sum_cards_by_rarity(set_num=set_num)}')
+        # print(f'{set_num}')
+        # print(f'\t{sum_cards(set_num=set_num)}')
+        # print(f'{sum_cards_by_rarity(set_num=set_num)}')
 
         sum_by_set[set_num] = sum_cards_by_rarity(set_num=set_num)
 
     print(sum_by_set)
     for k, v in sum_by_set.items():
-        print(f"{k}, \t{v['1_diamond'] // 3 = }, {v['1_diamond'] // 3 * 5=}")
+        print(f'1_diamond: \t\t\t{v['1_diamond']}')
+        print(f'1d/3 (packs):\t\t{v['1_diamond']/3:.2f}')
+        print(f'wonder pick:\t\t{v['1_diamond']-(config[k]['points']/5*3)}')
+        print(f'{k}| points from 1d\t{(v['1_diamond']/3*5):.2f}')
+        print(f'{k}| config points\t{config[k]['points']}')
+        print(f'diff:\t\t\t\t{v['1_diamond'] / 3 * 5-config[k]['points']:.2f}')
+        print()
     # while True:
     #     menu()
 
