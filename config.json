@@ -1,58 +1,72 @@
 {
-  "a1": {
-    "all": 226,
-    "star": 0,
-    "shiny": 0,
-    "crown": 0,
-    "points": 0
-  },
-  "a1a": {
-    "all": 68,
-    "star": 0,
-    "shiny": 0,
-    "crown": 0,
-    "points": 0
-  },
-  "a2": {
-    "all": 155,
-    "star": 0,
-    "shiny": 0,
-    "crown": 0,
-    "points": 0
-  },
-  "a2a": {
-    "all": 75,
-    "star": 0,
-    "shiny": 0,
-    "crown": 0,
-    "points": 0
-  },
-  "a2b": {
-    "all": 72,
-    "star": 0,
-    "shiny": 0,
-    "crown": 0,
-    "points": 0
-  },
-  "a3": {
-    "all": 155,
-    "star": 0,
-    "shiny": 0,
-    "crown": 0,
-    "points": 0
-  },
-  "a3a": {
-    "all": 69,
-    "star": 0,
-    "shiny": 0,
-    "crown": 0,
-    "points": 0
-  },
-  "a4": {
-    "all": 161,
-    "star": 0,
-    "shiny": 0,
-    "crown": 0,
-    "points": 0
-  }
+    "a1": {
+        "all": 226,
+        "star": 0,
+        "shiny": 0,
+        "crown": 0,
+        "points": 640
+    },
+    "a1a": {
+        "all": 68,
+        "star": 0,
+        "shiny": 0,
+        "crown": 0,
+        "points": 325
+    },
+    "a2": {
+        "all": 155,
+        "star": 0,
+        "shiny": 0,
+        "crown": 0,
+        "points": 65
+    },
+    "a2a": {
+        "all": 75,
+        "star": 0,
+        "shiny": 0,
+        "crown": 0,
+        "points": 245
+    },
+    "a2b": {
+        "all": 72,
+        "star": 0,
+        "shiny": 0,
+        "crown": 0,
+        "points": 230
+    },
+    "a3": {
+        "all": 155,
+        "star": 0,
+        "shiny": 0,
+        "crown": 0,
+        "points": 340
+    },
+    "a3a": {
+        "all": 69,
+        "star": 0,
+        "shiny": 0,
+        "crown": 0,
+        "points": 250
+    },
+    "a3b": {
+        "all": 69,
+        "star": 0,
+        "shiny": 0,
+        "crown": 0,
+        "points": 90
+    },
+    "a4": {
+        "all": 161,
+        "star": 0,
+        "shiny": 0,
+        "crown": 0,
+        "points": 425
+    },
+    "a4a": {
+        "all": 71,
+        "star": 0,
+        "shiny": 0,
+        "crown": 0,
+        "points": 0
+    }
 }
