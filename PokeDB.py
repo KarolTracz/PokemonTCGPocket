@@ -45,13 +45,22 @@ def change_rarity(sorce_json: list) -> list:
 def add_card_2_database(pokemon_list: list):
     con = sqlite3.connect("PokeDB.db")
     cur = con.cursor()
-    in_db = cur.execute("SELECT id FROM normal_cards").fetchall()
-    normal_carads = json2id_data_parser([i for i in pokemon_list if i['id'][:2] != 'pa'])
-    print([i for i in normal_carads if i not in in_db])
 
-    in_db = cur.execute("SELECT id FROM promo_cards").fetchall()
-    promo_cards = json2id_data_parser([i for i in pokemon_list if i['id'][:2] == 'pa'])
-    print([i for i in promo_cards if i not in in_db])
+    raw_normal_cards = cur.execute("SELECT * FROM normal_cards").fetchall()
+
+    normal_cards_in_db = []
+    for i in raw_normal_cards:
+        i = list(i)
+        i[6] = None
+        normal_cards_in_db.append(tuple(i))
+
+    normal_cards = json2db_data_parser([i for i in pokemon_list if i['id'][:2] != 'pa'])
+    new_cards = [i for i in normal_cards if i not in normal_cards_in_db]
+
+    cur.executemany("INSERT INTO normal_cards VALUES (?, ?, ?, ?, ?, ?, ?, ?)", new_cards)
+
+    promo_cards = cur.execute("SELECT id FROM promo_cards").fetchall()
+    promo_cards_id = json2id_data_parser([i for i in pokemon_list if i['id'][:2] == 'pa'])
 
     con.close()
 
