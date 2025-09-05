@@ -47,21 +47,27 @@ def add_card_2_database(pokemon_list: list):
     cur = con.cursor()
 
     raw_normal_cards = cur.execute("SELECT * FROM normal_cards").fetchall()
-
     normal_cards_in_db = []
     for i in raw_normal_cards:
         i = list(i)
         i[6] = None
         normal_cards_in_db.append(tuple(i))
-
     normal_cards = json2db_data_parser([i for i in pokemon_list if i['id'][:2] != 'pa'])
-    new_cards = [i for i in normal_cards if i not in normal_cards_in_db]
+    new_normal_cards = [i for i in normal_cards if i not in normal_cards_in_db]
 
-    cur.executemany("INSERT INTO normal_cards VALUES (?, ?, ?, ?, ?, ?, ?, ?)", new_cards)
+    raw_promo_cards = cur.execute("SELECT * FROM promo_cards").fetchall()
+    promo_cards_in_db = []
+    for i in raw_promo_cards:
+        i = list(i)
+        i[6] = None
+        promo_cards_in_db.append(tuple(i))
+    promo_cards = json2db_data_parser([i for i in pokemon_list if i['id'][:2] == 'pa'])
+    new_promo_cards = [i for i in promo_cards if i not in promo_cards_in_db]
 
-    promo_cards = cur.execute("SELECT id FROM promo_cards").fetchall()
-    promo_cards_id = json2id_data_parser([i for i in pokemon_list if i['id'][:2] == 'pa'])
+    cur.executemany("INSERT INTO normal_cards VALUES (?, ?, ?, ?, ?, ?, ?, ?)", new_normal_cards)
+    cur.executemany("INSERT INTO promo_cards VALUES (?, ?, ?, ?, ?, ?, ?, ?)", new_promo_cards)
 
+    con.commit()
     con.close()
 
 
@@ -79,6 +85,7 @@ def create_database(pokemon_list: list) -> None:
     cur.executemany("INSERT INTO normal_cards VALUES (?, ?, ?, ?, ?, ?, ?, ?)", normal_carads)
     cur.executemany("INSERT INTO promo_cards VALUES (?, ?, ?, ?, ?, ?, ?, ?)", promo_cards)
     con.commit()
+    con.close()
 
 
 def json2id_data_parser(json: list) -> list:
