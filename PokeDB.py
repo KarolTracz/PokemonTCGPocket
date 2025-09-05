@@ -7,7 +7,8 @@ with open('pokemon_list.json', 'r', encoding='utf-8') as f:
 
 def main() -> None:
     pokemon_list = change_rarity(raw_pokemon_list)
-    create_database(pokemon_list=pokemon_list)
+    # create_database(pokemon_list=pokemon_list)
+    add_card_2_database(pokemon_list)
     pass
 
 
@@ -41,6 +42,19 @@ def change_rarity(sorce_json: list) -> list:
 
     return sorce_json
 
+def add_card_2_database(pokemon_list: list):
+    con = sqlite3.connect("PokeDB.db")
+    cur = con.cursor()
+    in_db = cur.execute("SELECT id FROM normal_cards").fetchall()
+    normal_carads = json2id_data_parser([i for i in pokemon_list if i['id'][:2] != 'pa'])
+    print([i for i in normal_carads if i not in in_db])
+
+    in_db = cur.execute("SELECT id FROM promo_cards").fetchall()
+    promo_cards = json2id_data_parser([i for i in pokemon_list if i['id'][:2] == 'pa'])
+    print([i for i in promo_cards if i not in in_db])
+
+    con.close()
+
 
 def create_database(pokemon_list: list) -> None:
     con = sqlite3.connect("PokeDB.db")
@@ -56,6 +70,13 @@ def create_database(pokemon_list: list) -> None:
     cur.executemany("INSERT INTO normal_cards VALUES (?, ?, ?, ?, ?, ?, ?, ?)", normal_carads)
     cur.executemany("INSERT INTO promo_cards VALUES (?, ?, ?, ?, ?, ?, ?, ?)", promo_cards)
     con.commit()
+
+
+def json2id_data_parser(json: list) -> list:
+    procesed_cards = []
+    for i, pokemon in enumerate(json):
+        procesed_cards.append((i,))
+    return procesed_cards
 
 
 def json2db_data_parser(json: list) -> list:
