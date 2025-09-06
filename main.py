@@ -27,7 +27,6 @@ def main() -> None:
         # print(f'{set_num}')
         # print(f'\t{sum_cards(set_num=set_num)}')
         # print(f'{sum_cards_by_rarity(set_num=set_num)}')
-
         sum_by_set[set_num] = sum_cards_by_rarity(set_num=set_num)
 
     print(sum_by_set)
