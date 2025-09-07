@@ -16,30 +16,30 @@ with open('config.json', 'r') as f:
 
 
 def main() -> None:
-    sets = get_all_sets(sql_db='PokeDB.db')
-    overall_counts, avg_per_card, avg_per_pack = simulate_many(trials=10_000, packs_per_trial=1000, have_pack_shinny=False)
-    print(overall_counts)
-    print(avg_per_card)
-    print(avg_per_pack)
-    print()
-    sum_by_set = {}
-    for set_num in sets:
-        # print(f'{set_num}')
-        # print(f'\t{sum_cards(set_num=set_num)}')
-        # print(f'{sum_cards_by_rarity(set_num=set_num)}')
-        sum_by_set[set_num] = sum_cards_by_rarity(set_num=set_num)
-
-    print(sum_by_set)
-    for k, v in sum_by_set.items():
-        print(f'1_diamond: \t\t\t{v['1_diamond']}')
-        print(f'1d/3 (packs):\t\t{v['1_diamond']/3:.2f}')
-        print(f'wonder pick:\t\t{v['1_diamond']-(config[k]['points']/5*3)}')
-        print(f'{k}| points from 1d\t{(v['1_diamond']/3*5):.2f}')
-        print(f'{k}| config points\t{config[k]['points']}')
-        print(f'diff:\t\t\t\t{v['1_diamond'] / 3 * 5-config[k]['points']:.2f}')
-        print()
-    # while True:
-    #     menu()
+    # sets = get_all_sets(sql_db='PokeDB.db')
+    # overall_counts, avg_per_card, avg_per_pack = simulate_many(trials=10_000, packs_per_trial=1000, have_pack_shinny=False)
+    # print(overall_counts)
+    # print(avg_per_card)
+    # print(avg_per_pack)
+    # print()
+    # sum_bqy_set = {}
+    # for set_num in sets:
+    #     print(f'{set_num}')
+    #     print(f'\t{sum_cards(set_num=set_num)}')
+    #     print(f'{sum_cards_by_rarity(set_num=set_num)}')
+    #     sum_by_set[set_num] = sum_cards_by_rarity(set_num=set_num)
+    #
+    # print(sum_by_set)
+    # for k, v in sum_by_set.items():
+    #     print(f'1_diamond: \t\t\t{v['1_diamond']}')
+    #     print(f'1d/3 (packs):\t\t{v['1_diamond']/3:.2f}')
+    #     print(f'wonder pick:\t\t{v['1_diamond']-(config[k]['points']/5*3)}')
+    #     print(f'{k}| points from 1d\t{(v['1_diamond']/3*5):.2f}')
+    #     print(f'{k}| config points\t{config[k]['points']}')
+    #     print(f'diff:\t\t\t\t{v['1_diamond'] / 3 * 5-config[k]['points']:.2f}')
+    #     print()
+    while True:
+        menu()
 
 
 def menu() -> None:
@@ -202,20 +202,19 @@ def count_all_cards() -> None:
         for pokemon in pokemons:
             screenshot_and_crop_card()
             card_amount = count_card(threshold=0.95)
-            move_card()
+            move_card_forward()
 
             print(pokemon[1], card_amount)
 
             if card_amount is None:
                 print("card_amount = None")
-                user_input = input(
-                    f"Please check last screenshot, if it is not a card setup: \n{pokemon}\nand input 'done' ")
-                if user_input.lower() == 'done':
-                    screenshot_and_crop_card()
-                    card_amount = count_card(threshold=0.95)
-                    print(pokemon[1], card_amount)
-                    sleep(1)
-                    move_card()
+                move_card_backward()
+                sleep(1)
+                screenshot_and_crop_card()
+                card_amount = count_card(threshold=0.95)
+                print(pokemon[1], card_amount)
+                sleep(1)
+                move_card_forward()
             if card_amount == 0:
                 cur.execute(f"UPDATE normal_cards SET amount = 0 WHERE id = {pokemon[0]};")
             elif card_amount >= 1:
@@ -256,8 +255,19 @@ def get_all_sets(sql_db: str):
     return_set = sorted({i[0] for i in res})
     return return_set
 
+def move_card_backward():
+    x1, y1 = randrange(700, 1000), randrange(1850, 2175)
+    x2, y2 = randrange(40, 380), randrange(1850, 2175)
 
-def move_card():
+    duration = randrange(6, 8) / 10 * 1000
+
+    run([
+        "adb", "shell", "input", "swipe",
+        str(x2), str(y2), str(x1), str(y1), str(int(duration))
+    ])
+    sleep(0.2)
+
+def move_card_forward():
     x1, y1 = randrange(700, 1000), randrange(1850, 2175)
     x2, y2 = randrange(40, 380), randrange(1850, 2175)
 
