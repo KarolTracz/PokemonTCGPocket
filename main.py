@@ -44,6 +44,8 @@ def main() -> None:
 
 def menu() -> None:
     user_input = input(f"Input number\n1. Scan whole card list\n2. List amount of missing 1-4 diamond cards\n3. Config setup ")
+    if user_input == 'q':
+        exit()
     try:
         user_input = int(user_input)
     except ValueError:
