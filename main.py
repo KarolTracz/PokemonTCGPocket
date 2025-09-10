@@ -1,5 +1,6 @@
 import random
 from collections import Counter
+from operator import index
 from random import randrange
 from time import sleep
 from json import load, dumps
@@ -43,7 +44,11 @@ def main() -> None:
 
 
 def menu() -> None:
-    user_input = input(f"Input number\n1. Scan whole card list\n2. List amount of missing 1-4 diamond cards\n3. Config setup ")
+    user_input = input("Input number"
+                       "\n1. Scan whole card list"
+                       "\n2. List amount of missing 1-4 diamond cards"
+                       "\n3. Config setup "
+                       "\n4. which_pack_open()\n")
     if user_input == 'q':
         exit()
     try:
@@ -58,9 +63,36 @@ def menu() -> None:
         list_missing_cards()
     elif user_input == 3:
         config_setup()
+    elif user_input == 4:
+        #TO-DO add change card_threshhold value
+        which_pack_open()
 
     else:
         pass
+
+
+def which_pack_open(card_threshhold: int = 1) -> None:
+    con = sqlite3.connect('PokeDB.db')
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    pokemons = cur.execute(f"SELECT * FROM normal_cards").fetchall()
+    not_obtain_pokemons = {}
+    seek_rarity = ('1_diamond', '2_diamond', '3_diamond', '4_diamond')
+    for pokemon in pokemons:
+        if pokemon['amount'] is None:
+            print('You need to scan your whole collection, we dont have data for amount you have')
+            break
+        if pokemon['amount'] < card_threshhold and pokemon['rarity'] in seek_rarity:
+            if pokemon['set_num'] not in not_obtain_pokemons:
+                not_obtain_pokemons[pokemon['set_num']] = 1
+            else:
+                not_obtain_pokemons[pokemon['set_num']] += 1
+    print(not_obtain_pokemons.values())
+    for k, v in not_obtain_pokemons.items():
+        if v == max(not_obtain_pokemons.values()):
+            print(k)
+    con.close()
+
 
 def simulate_many(trials: int, packs_per_trial: int, have_pack_shinny: bool):
     overall_counts = Counter()
