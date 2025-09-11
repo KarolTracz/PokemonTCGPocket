@@ -1,4 +1,3 @@
-import random
 from collections import Counter
 from random import randrange
 from time import sleep
@@ -6,7 +5,9 @@ from json import load, dumps
 from os import listdir
 from os.path import join as path_join
 from subprocess import run
+from math import floor
 import sqlite3
+import random
 
 import cv2
 from PIL import Image
@@ -62,14 +63,14 @@ def menu() -> None:
     elif user_input == 3:
         config_setup()
     elif user_input == 4:
-        #TO-DO add change card_threshhold value
+        #TO-DO add change card_threshold value
         which_pack_open()
 
     else:
         pass
 
 
-def which_pack_open(card_threshhold: int = 1) -> None:
+def which_pack_open(card_threshold: int = 1) -> None:
     con = sqlite3.connect('PokeDB.db')
     con.row_factory = sqlite3.Row
     cur = con.cursor()
@@ -80,7 +81,7 @@ def which_pack_open(card_threshhold: int = 1) -> None:
         if pokemon['amount'] is None:
             print('You need to scan your whole collection, we dont have data for amount you have')
             break
-        if pokemon['amount'] < card_threshhold and pokemon['rarity'] in seek_rarity:
+        if pokemon['amount'] < card_threshold and pokemon['rarity'] in seek_rarity:
             if pokemon['set_num'] not in not_obtain_pokemons:
                 not_obtain_pokemons[pokemon['set_num']] = 1
             else:
@@ -231,16 +232,23 @@ def count_all_cards() -> None:
         cur = con.cursor()
         pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
 
+        progres_bar_width = 50
         for i, pokemon in enumerate(pokemons):
             screenshot_and_crop_card()
             card_amount = count_card(threshold=0.95)
             move_card_forward()
 
-            progres = i+1*100/len(pokemons)
-            print(f'\r{progres:05.2f}% \t{set_num}', end='', flush=True)
+            bar = '['
+            progres = (i + 1) * 100 / len(pokemons)
+            for _ in range(floor(progres * progres_bar_width / 100)):
+                bar +='|'
+            for _ in range(floor(progres * progres_bar_width / 100), progres_bar_width):
+                bar += ' '
+            bar += ']'
+            print(f'\r{bar} {progres:06.2f}% \t{set_num}', end='', flush=True)
 
             if card_amount is None:
-                print("card_amount = None")
+                print("\ncard_amount = None")
                 move_card_backward()
                 sleep(1)
                 screenshot_and_crop_card()
@@ -253,7 +261,7 @@ def count_all_cards() -> None:
             elif card_amount >= 1:
                 cur.execute(f"UPDATE normal_cards SET amount = {card_amount} WHERE id = {pokemon[0]};")
             else:
-                print(f"UNEXPECTED BAHAVIOR OF count_card() -> {card_amount}")
+                print(f"\nUNEXPECTED BEHAVIOR OF count_card() -> {card_amount}")
 
         print()
         con.commit()
