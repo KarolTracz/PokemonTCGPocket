@@ -1,6 +1,5 @@
 import random
 from collections import Counter
-from operator import index
 from random import randrange
 from time import sleep
 from json import load, dumps
@@ -14,7 +13,6 @@ from PIL import Image
 
 with open('config.json', 'r') as f:
     config = load(f)
-
 
 def main() -> None:
     # sets = get_all_sets(sql_db='PokeDB.db')
@@ -233,12 +231,13 @@ def count_all_cards() -> None:
         cur = con.cursor()
         pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
 
-        for pokemon in pokemons:
+        for i, pokemon in enumerate(pokemons):
             screenshot_and_crop_card()
             card_amount = count_card(threshold=0.95)
             move_card_forward()
 
-            print(pokemon[1], card_amount)
+            progres = i+1*100/len(pokemons)
+            print(f'\r{progres:05.2f}% \t{set_num}', end='', flush=True)
 
             if card_amount is None:
                 print("card_amount = None")
@@ -256,6 +255,7 @@ def count_all_cards() -> None:
             else:
                 print(f"UNEXPECTED BAHAVIOR OF count_card() -> {card_amount}")
 
+        print()
         con.commit()
         con.close()
 
@@ -277,7 +277,7 @@ def screenshot_and_crop_card() -> None:
     with open('./temp/screen.png', "wb") as f:
         run(["adb", "exec-out", "screencap", "-p"], stdout=f)
     img = Image.open("./temp/screen.png")
-    crop_area = (235, 1725, 292, 1769)
+    crop_area = (235, 1727, 292, 1771)
     cropped_img = img.crop(crop_area)
     cropped_img.save("./temp/number.png")
 
