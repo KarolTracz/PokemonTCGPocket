@@ -93,8 +93,46 @@ def open_promo() -> None:
     x = str(randrange(claim_pos[0], claim_pos[2]))
     y = str(randrange(claim_pos[1], claim_pos[3]))
     run(["adb", "shell", "input", "tap", x, y])
-    sleep(1)
+    sleep(2)
+
     press_ok()
+    sleep(5)
+    open_pack()
+    sleep(5)
+    press_tap_and_hold_button()
+    sleep(5)
+    press_next()
+    sleep(5)
+    press_ok()
+    sleep(2)
+
+
+def press_next() -> None:
+    next_pos = (380, 2240, 700, 2340)
+    x = str(randrange(next_pos[0], next_pos[2]))
+    y = str(randrange(next_pos[1], next_pos[3]))
+    run(["adb", "shell", "input", "tap", x, y])
+
+
+def press_tap_and_hold_button() -> None:
+    claim_pos = (940, 2270, 990, 2320)
+    x = str(randrange(claim_pos[0], claim_pos[2]))
+    y = str(randrange(claim_pos[1], claim_pos[3]))
+    run(["adb", "shell", "input", "tap", x, y])
+
+def open_pack() -> None:
+    left_pos = (140, 1330, 180, 1370)
+    right_pos = (900, 1330, 940, 1370)
+
+    x1, y1 = str(randrange(left_pos[0], left_pos[2])), str(randrange(left_pos[1], left_pos[3]))
+    x2, y2 = str(randrange(right_pos[0], right_pos[2])), str(randrange(right_pos[1], right_pos[3]))
+
+    duration = randrange(2, 4) / 10 * 1000
+
+    run([
+        "adb", "shell", "input", "swipe",
+        str(x2), str(y2), str(x1), str(y1), str(int(duration))
+    ])
 
 
 def press_ok() -> None:
