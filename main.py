@@ -47,7 +47,9 @@ def menu() -> None:
                        "\n1. Scan whole card list"
                        "\n2. List amount of missing 1-4 diamond cards"
                        "\n3. Config setup "
-                       "\n4. which_pack_open()\n")
+                       "\n4. which_pack_open()"
+                       "\n5. open_promo()"
+                       "\n6. screenshot()\n")
     if user_input == 'q':
         exit()
     try:
@@ -65,9 +67,41 @@ def menu() -> None:
     elif user_input == 4:
         #TO-DO add change card_threshold value
         which_pack_open()
+    elif user_input == 5:
+        open_promo()
+    elif user_input == 6:
+        screenshot()
 
     else:
         pass
+def claim_all_rewards() -> None:
+    #TO-DO: Navigate to the rewards
+
+    claim_all_pos = (700, 1940, 1000, 2020)
+    x = str(randrange(claim_all_pos[0], claim_all_pos[2]))
+    y = str(randrange(claim_all_pos[1], claim_all_pos[3]))
+
+    run(["adb", "shell", "input", "tap", x, y])
+    sleep(1)
+    press_ok()
+
+
+def open_promo() -> None:
+    claim_all_rewards()
+
+    claim_pos = (750, 580, 950, 650)
+    x = str(randrange(claim_pos[0], claim_pos[2]))
+    y = str(randrange(claim_pos[1], claim_pos[3]))
+    run(["adb", "shell", "input", "tap", x, y])
+    sleep(1)
+    press_ok()
+
+
+def press_ok() -> None:
+    ok_pos=(375, 1475, 700, 1600)
+    x = str(randrange(ok_pos[0], ok_pos[2]))
+    y = str(randrange(ok_pos[1], ok_pos[3]))
+    run(["adb", "shell", "input", "tap", x, y])
 
 
 def which_pack_open(card_threshold: int = 1) -> None:
@@ -280,10 +314,12 @@ def count_card(threshold: float = 0.95) -> int | None:
     else:
         return None
 
-
-def screenshot_and_crop_card() -> None:
+def screenshot() -> None:
     with open('./temp/screen.png', "wb") as f:
         run(["adb", "exec-out", "screencap", "-p"], stdout=f)
+
+
+def screenshot_and_crop_card(img) -> None:
     img = Image.open("./temp/screen.png")
     crop_area = (235, 1727, 292, 1771)
     cropped_img = img.crop(crop_area)
