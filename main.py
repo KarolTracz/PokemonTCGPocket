@@ -5,6 +5,7 @@ from json import load, dumps
 from os import listdir
 from os.path import join as path_join
 from subprocess import run
+from typing import Tuple
 from math import floor
 import sqlite3
 import random
@@ -71,54 +72,61 @@ def menu() -> None:
         open_promo()
     elif user_input == 6:
         screenshot()
-
     else:
         pass
+
+
+def press(position: Tuple[int, int, int, int]) -> None:
+    """
+    Press button that is in range from x1, y1 to x2 y2
+    Where x1, y1 are top left corner of button position
+    and x2, y2 are bottom right corner of button position
+    all positions should be provided as an int representing number of pixel from left right corner of the screen
+    """
+
+    x = str(randrange(position[0], position[2]))
+    y = str(randrange(position[1], position[3]))
+
+    run(["adb", "shell", "input", "tap", x, y])
+
+
 def claim_all_rewards() -> None:
     #TO-DO: Navigate to the rewards
 
     claim_all_pos = (700, 1940, 1000, 2020)
-    x = str(randrange(claim_all_pos[0], claim_all_pos[2]))
-    y = str(randrange(claim_all_pos[1], claim_all_pos[3]))
+    ok_pos=(375, 1475, 700, 1600)
 
-    run(["adb", "shell", "input", "tap", x, y])
-    sleep(1)
-    press_ok()
+    press(position=claim_all_pos)
+    sleep(2)
+    press(position=ok_pos)
 
 
 def open_promo() -> None:
-    claim_all_rewards()
-
-    claim_pos = (750, 580, 950, 650)
-    x = str(randrange(claim_pos[0], claim_pos[2]))
-    y = str(randrange(claim_pos[1], claim_pos[3]))
-    run(["adb", "shell", "input", "tap", x, y])
-    sleep(2)
-
-    press_ok()
-    sleep(5)
-    open_pack()
-    sleep(5)
-    press_tap_and_hold_button()
-    sleep(5)
-    press_next()
-    sleep(5)
-    press_ok()
-    sleep(2)
-
-
-def press_next() -> None:
+    how_many_loop = input("Input how many promo pack you want to open\n")
+    try:
+        how_many_loop = int(how_many_loop)
+    except ValueError:
+        print('Invalid input, you need to provide int')
+    first_reward_claim_pos = (750, 580, 950, 650)
     next_pos = (380, 2240, 700, 2340)
-    x = str(randrange(next_pos[0], next_pos[2]))
-    y = str(randrange(next_pos[1], next_pos[3]))
-    run(["adb", "shell", "input", "tap", x, y])
+    tap_and_hold_pos = (940, 2270, 990, 2320)
+    ok_pos = (375, 1475, 700, 1600)
 
+    claim_all_rewards()
+    for i in range(how_many_loop):
+        press(position=first_reward_claim_pos)
+        sleep(2)
+        press(position=ok_pos)
+        sleep(5)
+        open_pack()
+        sleep(5)
+        press(position=tap_and_hold_pos)
+        sleep(5)
+        press(position=next_pos)
+        sleep(5)
+        press(position=ok_pos)
+        sleep(2)
 
-def press_tap_and_hold_button() -> None:
-    claim_pos = (940, 2270, 990, 2320)
-    x = str(randrange(claim_pos[0], claim_pos[2]))
-    y = str(randrange(claim_pos[1], claim_pos[3]))
-    run(["adb", "shell", "input", "tap", x, y])
 
 def open_pack() -> None:
     left_pos = (140, 1330, 180, 1370)
@@ -133,13 +141,6 @@ def open_pack() -> None:
         "adb", "shell", "input", "swipe",
         str(x2), str(y2), str(x1), str(y1), str(int(duration))
     ])
-
-
-def press_ok() -> None:
-    ok_pos=(375, 1475, 700, 1600)
-    x = str(randrange(ok_pos[0], ok_pos[2]))
-    y = str(randrange(ok_pos[1], ok_pos[3]))
-    run(["adb", "shell", "input", "tap", x, y])
 
 
 def which_pack_open(card_threshold: int = 1) -> None:
@@ -357,7 +358,7 @@ def screenshot() -> None:
         run(["adb", "exec-out", "screencap", "-p"], stdout=f)
 
 
-def screenshot_and_crop_card(img) -> None:
+def screenshot_and_crop_card() -> None:
     img = Image.open("./temp/screen.png")
     crop_area = (235, 1727, 292, 1771)
     cropped_img = img.crop(crop_area)
