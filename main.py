@@ -7,6 +7,7 @@ from os.path import join as path_join
 from subprocess import run
 from typing import Tuple
 from math import floor
+from shutil import get_terminal_size
 import sqlite3
 import random
 
@@ -16,29 +17,10 @@ from PIL import Image
 with open('config.json', 'r') as f:
     config = load(f)
 
+COLUMNS, ROWS = get_terminal_size()
+
 def main() -> None:
-    # sets = get_all_sets(sql_db='PokeDB.db')
-    # overall_counts, avg_per_card, avg_per_pack = simulate_many(trials=10_000, packs_per_trial=1000, have_pack_shinny=False)
-    # print(overall_counts)
-    # print(avg_per_card)
-    # print(avg_per_pack)
-    # print()
-    # sum_bqy_set = {}
-    # for set_num in sets:
-    #     print(f'{set_num}')
-    #     print(f'\t{sum_cards(set_num=set_num)}')
-    #     print(f'{sum_cards_by_rarity(set_num=set_num)}')
-    #     sum_by_set[set_num] = sum_cards_by_rarity(set_num=set_num)
-    #
-    # print(sum_by_set)
-    # for k, v in sum_by_set.items():
-    #     print(f'1_diamond: \t\t\t{v['1_diamond']}')
-    #     print(f'1d/3 (packs):\t\t{v['1_diamond']/3:.2f}')
-    #     print(f'wonder pick:\t\t{v['1_diamond']-(config[k]['points']/5*3)}')
-    #     print(f'{k}| points from 1d\t{(v['1_diamond']/3*5):.2f}')
-    #     print(f'{k}| config points\t{config[k]['points']}')
-    #     print(f'diff:\t\t\t\t{v['1_diamond'] / 3 * 5-config[k]['points']:.2f}')
-    #     print()
+    print(f'{ROWS=}, {COLUMNS=}')
     while True:
         menu()
 
@@ -305,7 +287,7 @@ def count_all_cards() -> None:
         cur = con.cursor()
         pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
 
-        progres_bar_width = 50
+        progres_bar_width = COLUMNS - 20
         for i, pokemon in enumerate(pokemons):
             screenshot_and_crop_card()
             card_amount = count_card(threshold=0.95)
@@ -336,7 +318,6 @@ def count_all_cards() -> None:
             else:
                 print(f"\nUNEXPECTED BEHAVIOR OF count_card() -> {card_amount}")
 
-        print()
         con.commit()
         con.close()
 
@@ -359,6 +340,7 @@ def screenshot() -> None:
 
 
 def screenshot_and_crop_card() -> None:
+    screenshot()
     img = Image.open("./temp/screen.png")
     crop_area = (235, 1727, 292, 1771)
     cropped_img = img.crop(crop_area)
