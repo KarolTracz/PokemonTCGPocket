@@ -6,10 +6,27 @@ with open('pokemon_list.json', 'r', encoding='utf-8') as f:
 
 
 def main() -> None:
-    pokemon_list = change_rarity(raw_pokemon_list)
+    # pokemon_list = change_rarity(raw_pokemon_list)
     # create_database(pokemon_list=pokemon_list)
-    add_card_2_database(pokemon_list)
-    pass
+    # add_card_2_database(pokemon_list)
+    alt_detection()
+
+
+def alt_detection() -> None:
+    con = sqlite3.connect("PokeDB.db")
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+
+    raw_normal_cards = cur.execute("SELECT * FROM normal_cards").fetchall()
+    for pokemon_1 in raw_normal_cards:
+        alts = []
+        for pokemon_2 in raw_normal_cards:
+            if pokemon_1['name'] == pokemon_2['name'] and pokemon_1['id'] != pokemon_2['id']:
+                alts.append(pokemon_2['id'])
+
+        print(f'SET alt_ids = {alts} WHERE id = {pokemon_1['id']};')
+        cur.execute(f"UPDATE normal_cards SET alt_ids = '{alts}' WHERE id = {pokemon_1['id']};")
+    con.commit()
 
 
 def change_rarity(sorce_json: list) -> list:
