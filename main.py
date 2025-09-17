@@ -30,13 +30,14 @@ def menu() -> None:
         print('scrcpy is off')
         exit()
 
-    user_input = input("Input number"
-                       "\n1. Scan whole card list"
-                       "\n2. List amount of missing 1-4 diamond cards"
-                       "\n3. Config setup "
-                       "\n4. which_pack_open()"
-                       "\n5. open_promo()"
-                       "\n6. screenshot()\n")
+    user_input = input("Input number\n"
+                       "1. Scan whole card list\n"
+                       "2. List amount of missing 1-4 diamond cards\n"
+                       "3. Config setup\n"
+                       "4. which_pack_open()\n"
+                       "5. open_promo()\n"
+                       "6. screenshot()\n"
+                       "7. is_scrcpy_on()\n")
     if user_input == 'q':
         exit()
     try:
@@ -52,7 +53,7 @@ def menu() -> None:
     elif user_input == 3:
         config_setup()
     elif user_input == 4:
-        #TO-DO add change card_threshold value
+        #TO-DO: add change card_threshold value
         which_pack_open()
     elif user_input == 5:
         open_promo()
