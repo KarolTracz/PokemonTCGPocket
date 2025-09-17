@@ -26,6 +26,10 @@ def main() -> None:
 
 
 def menu() -> None:
+    if not is_scrcpy_on():
+        print('scrcpy is off')
+        exit()
+
     user_input = input("Input number"
                        "\n1. Scan whole card list"
                        "\n2. List amount of missing 1-4 diamond cards"
@@ -54,6 +58,9 @@ def menu() -> None:
         open_promo()
     elif user_input == 6:
         screenshot()
+    elif user_input == 7:
+        result = is_scrcpy_on()
+        print(f'{result=}')
     else:
         pass
 
@@ -81,6 +88,15 @@ def claim_all_rewards() -> None:
     press(position=claim_all_pos)
     sleep(2)
     press(position=ok_pos)
+
+
+def is_scrcpy_on() -> bool:
+    tasks_list = run("tasklist", capture_output=True, text=True).stdout
+    if "scrcpy.exe" in tasks_list:
+        scrcpy_is_running = True
+    else:
+        scrcpy_is_running = False
+    return scrcpy_is_running
 
 
 def open_promo() -> None:
