@@ -62,6 +62,8 @@ def menu() -> None:
     elif user_input == 7:
         result = is_scrcpy_on()
         print(f'{result=}')
+    elif user_input == 8:
+        tab_detection()
     else:
         pass
 
@@ -78,6 +80,15 @@ def press(position: Tuple[int, int, int, int]) -> None:
     y = str(randrange(position[1], position[3]))
 
     run(["adb", "shell", "input", "tap", x, y])
+
+
+def tab_detection():
+    screenshot_and_crop_area(area=(0, 2260, 1080, 2400), name='tabbar')
+    screenshot_and_crop_area(area=(0, 2260, 216, 2400), name='home')
+    screenshot_and_crop_area(area=(216, 2260, 432, 2400), name='cards')
+    screenshot_and_crop_area(area=(432, 2260, 648, 2400), name='social')
+    screenshot_and_crop_area(area=(648, 2260, 864, 2400), name='battle')
+
 
 
 def claim_all_rewards() -> None:
@@ -306,7 +317,7 @@ def count_all_cards() -> None:
 
         progres_bar_width = COLUMNS - 20
         for i, pokemon in enumerate(pokemons):
-            screenshot_and_crop_card()
+            screenshot_and_crop_area(area=(235, 1727, 292, 1771), name='number')
             card_amount = count_card(threshold=0.95)
             move_card_forward()
 
@@ -323,7 +334,7 @@ def count_all_cards() -> None:
                 print("\ncard_amount = None")
                 move_card_backward()
                 sleep(1)
-                screenshot_and_crop_card()
+                screenshot_and_crop_area(area=(235, 1727, 292, 1771), name='number')
                 card_amount = count_card(threshold=0.95)
                 print(pokemon[1], card_amount)
                 sleep(1)
@@ -356,12 +367,12 @@ def screenshot() -> None:
         run(["adb", "exec-out", "screencap", "-p"], stdout=f)
 
 
-def screenshot_and_crop_card() -> None:
+def screenshot_and_crop_area(area: Tuple[int, int, int, int], name:str) -> None:
     screenshot()
     img = Image.open("./temp/screen.png")
-    crop_area = (235, 1727, 292, 1771)
+    crop_area = area
     cropped_img = img.crop(crop_area)
-    cropped_img.save("./temp/number.png")
+    cropped_img.save(f"./temp/{name}.png")
 
 
 def get_all_sets(sql_db: str):
