@@ -24,7 +24,7 @@ def alt_detection() -> None:
             if pokemon_1['name'] == pokemon_2['name'] and pokemon_1['id'] != pokemon_2['id']:
                 alts.append(pokemon_2['id'])
 
-        print(f'SET alt_ids = {alts} WHERE id = {pokemon_1['id']};')
+        print(f'SET alt_ids = {alts} WHERE id = {pokemon_1["id"]};')
         cur.execute(f"UPDATE normal_cards SET alt_ids = '{alts}' WHERE id = {pokemon_1['id']};")
     con.commit()
 
