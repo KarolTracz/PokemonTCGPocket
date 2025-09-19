@@ -1,6 +1,6 @@
 from collections import Counter
 from random import randrange
-from time import sleep
+from time import sleep, time
 from json import load, dumps
 from os import listdir
 from os.path import join as path_join
@@ -13,7 +13,6 @@ import random
 
 import cv2
 from PIL import Image
-from pandas import interval_range
 
 with open('config.json', 'r') as f:
     config = load(f)
@@ -27,9 +26,7 @@ def main() -> None:
 
 
 def menu() -> None:
-    if not is_scrcpy_on():
-        print('scrcpy is off')
-        exit()
+
 
     user_input = input("Input number\n"
                        "1. Scan whole card list\n"
@@ -294,15 +291,15 @@ def list_missing_cards() -> None:
             break
         if pokemon['amount'] == 0 and pokemon['rarity'] in seek_rarity:
             if pokemon['set_num'] not in not_obtain_pokemons:
-                not_obtain_pokemons[pokemon['set_num']] = {
-                    k: v for k, v in zip(seek_rarity, (0 for _ in range(len(seek_rarity))))
-                }
+                not_obtain_pokemons[pokemon['set_num']] = {pokemon['rarity']: 1}
+            elif pokemon['rarity'] not in not_obtain_pokemons[pokemon['set_num']]:
+                not_obtain_pokemons[pokemon['set_num']][pokemon['rarity']] = 1
             else:
                 not_obtain_pokemons[pokemon['set_num']][pokemon['rarity']] += 1
     for set_num, values in not_obtain_pokemons.items():
         print(set_num)
         for rarity, amount in values.items():
-            print(f'{rarity}\t- {amount}')
+            print(f'{rarity} - {amount}')
     con.close()
 
 
@@ -355,6 +352,7 @@ def count_all_cards() -> None:
         start += commit_interval
         con.commit()
         con.close()
+
     print(f'detected None:')
     for k, v in none_detected_dict.items():
         print(k, v)
