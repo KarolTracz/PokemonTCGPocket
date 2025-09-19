@@ -32,14 +32,12 @@ def menu() -> None:
 
     user_input = input("Input number\n"
                        "1. Scan whole card list\n"
-                       "2. Scan common cards in set\n"
-                       "3. List amount of missing 1-4 diamond cards\n"
-                       "4. Config setup\n"
-                       "5. which_pack_open()\n"
-                       "6. open_promo()\n"
-                       "7. screenshot()\n"
-                       "8. is_scrcpy_on()\n"
-                       "9. tab_detection()\n")
+                       "2. List amount of missing 1-4 diamond cards\n"
+                       "3. Config setup\n"
+                       "4. which_pack_open()\n"
+                       "5. open_promo()\n"
+                       "6. screenshot()\n"
+                       "7. is_scrcpy_on()\n")
     if user_input == 'q':
         exit()
     try:
@@ -51,22 +49,20 @@ def menu() -> None:
     if user_input == 1:
         count_all_cards()
     elif user_input == 2:
-        scan_set()
-    elif user_input == 3:
         list_missing_cards()
-    elif user_input == 4:
+    elif user_input == 3:
         config_setup()
-    elif user_input == 5:
+    elif user_input == 4:
         #TO-DO: add change card_threshold value
         which_pack_open()
-    elif user_input == 6:
+    elif user_input == 5:
         open_promo()
-    elif user_input == 7:
+    elif user_input == 6:
         screenshot()
-    elif user_input == 8:
+    elif user_input == 7:
         result = is_scrcpy_on()
         print(f'{result=}')
-    elif user_input == 9:
+    elif user_input == 8:
         tab_detection()
     else:
         pass
@@ -322,7 +318,7 @@ def count_all_cards() -> None:
         progres_bar_width = COLUMNS - 20
         for i, pokemon in enumerate(pokemons):
             screenshot_and_crop_area(area=(235, 1727, 292, 1771), name='number')
-            card_amount = amount_recognition(threshold=0.95)
+            card_amount = count_card(threshold=0.95)
             move_card_forward()
 
             bar = '['
@@ -339,7 +335,7 @@ def count_all_cards() -> None:
                 move_card_backward()
                 sleep(1)
                 screenshot_and_crop_area(area=(235, 1727, 292, 1771), name='number')
-                card_amount = amount_recognition(threshold=0.95)
+                card_amount = count_card(threshold=0.95)
                 print(pokemon[1], card_amount)
                 sleep(1)
                 move_card_forward()
@@ -354,12 +350,7 @@ def count_all_cards() -> None:
         con.close()
 
 
-def scan_set(set_num: str | List[str]) -> None:
-    pass
-
-
-
-def amount_recognition(threshold: float = 0.95) -> int | None:
+def count_card(threshold: float = 0.95) -> int | None:
     for number in listdir('images/numbers'):
         num_img = path_join('images/numbers', number)
         confidence = compare_img(template_path=num_img, image_path='./temp/number.png')
