@@ -293,29 +293,36 @@ def list_missing_cards() -> None:
             break
         if pokemon['amount'] == 0 and pokemon['rarity'] in seek_rarity:
             if pokemon['set_num'] not in not_obtain_pokemons:
-                not_obtain_pokemons[pokemon['set_num']] = {
-                    k: v for k, v in zip(seek_rarity, (0 for _ in range(len(seek_rarity))))
-                }
+                not_obtain_pokemons[pokemon['set_num']] = {pokemon['rarity']: 1}
+            elif pokemon['rarity'] not in not_obtain_pokemons[pokemon['set_num']]:
+                not_obtain_pokemons[pokemon['set_num']][pokemon['rarity']] = 1
             else:
                 not_obtain_pokemons[pokemon['set_num']][pokemon['rarity']] += 1
     for set_num, values in not_obtain_pokemons.items():
         print(set_num)
         for rarity, amount in values.items():
-            print(f'{rarity}\t- {amount}')
+            print(f'{rarity} - {amount}')
     con.close()
 
 
 def count_all_cards() -> None:
-    sets = get_all_sets(sql_db='PokeDB.db')
+    con = sqlite3.connect('PokeDB.db')
+    cur = con.cursor()
+    last = cur.execute(f"SELECT id FROM normal_cards ORDER BY id DESC LIMIT 1").fetchall()
+    con.close()
 
-    for set_num in sets:
-        if input(f"prep for {set_num}. Input 'c' to skip this set. For count set press enter ").lower() == 'c':
-            continue
+    start = 0
+    commit_interval = 10
+    progres_bar_width = COLUMNS - 20
+
+    input('Switch to all cards view (5 columns instade of 3) and turn on "Cards with rarity if * or higher"\nSelect A1 001 Bulbasaur and press Enter')
+    none_detected_dict = {}
+    while True:
         con = sqlite3.connect('PokeDB.db')
         cur = con.cursor()
-        pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
-
-        progres_bar_width = COLUMNS - 20
+        pokemons = cur.execute(f"SELECT * FROM normal_cards LIMIT {commit_interval} OFFSET {start}").fetchall()
+        if not pokemons:
+            break
         for i, pokemon in enumerate(pokemons):
             screenshot_and_crop_area(area=(235, 1727, 292, 1771), name='number')
             card_amount = count_card(threshold=0.95)
@@ -324,19 +331,18 @@ def count_all_cards() -> None:
             bar = '['
             progres = (i + 1) * 100 / len(pokemons)
             for _ in range(floor(progres * progres_bar_width / 100)):
-                bar +='|'
+                bar += '|'
             for _ in range(floor(progres * progres_bar_width / 100), progres_bar_width):
                 bar += ' '
             bar += ']'
-            print(f'\r{bar} {progres:06.2f}% \t{set_num}', end='', flush=True)
+            print(f'\r{bar} {progres:06.2f}% {start}/{last[0][0]}', end='', flush=True)
 
             if card_amount is None:
-                print("\ncard_amount = None")
                 move_card_backward()
                 sleep(1)
                 screenshot_and_crop_area(area=(235, 1727, 292, 1771), name='number')
                 card_amount = count_card(threshold=0.95)
-                print(pokemon[1], card_amount)
+                none_detected_dict[pokemon[1]] = card_amount
                 sleep(1)
                 move_card_forward()
             if card_amount == 0:
@@ -345,9 +351,14 @@ def count_all_cards() -> None:
                 cur.execute(f"UPDATE normal_cards SET amount = {card_amount} WHERE id = {pokemon[0]};")
             else:
                 print(f"\nUNEXPECTED BEHAVIOR OF count_card() -> {card_amount}")
-
+        start += commit_interval
         con.commit()
         con.close()
+
+    print(f'detected None:')
+    for k, v in none_detected_dict.items():
+        print(k, v)
+    print()
 
 
 def count_card(threshold: float = 0.95) -> int | None:
@@ -375,14 +386,15 @@ def screenshot_and_crop_area(area: Tuple[int, int, int, int], name:str) -> None:
     cropped_img.save(f"./temp/{name}.png")
 
 
-def get_all_sets(sql_db: str):
+def get_all_sets(sql_db: str) -> set:
     con = sqlite3.connect(sql_db)
     cur = con.cursor()
     res = set(cur.execute("SELECT set_num FROM normal_cards"))
     return_set = sorted({i[0] for i in res})
     return return_set
 
-def move_card_backward():
+
+def move_card_backward() -> None:
     x1, y1 = randrange(700, 1000), randrange(1850, 2175)
     x2, y2 = randrange(40, 380), randrange(1850, 2175)
 
@@ -394,7 +406,7 @@ def move_card_backward():
     ])
     sleep(0.2)
 
-def move_card_forward():
+def move_card_forward() -> None:
     x1, y1 = randrange(700, 1000), randrange(1850, 2175)
     x2, y2 = randrange(40, 380), randrange(1850, 2175)
 
@@ -407,7 +419,7 @@ def move_card_forward():
     sleep(0.2)
 
 
-def compare_img(template_path: str, image_path: str):
+def compare_img(template_path: str, image_path: str) -> float:
     template = cv2.imread(template_path, cv2.IMREAD_GRAYSCALE)
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
