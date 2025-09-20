@@ -32,12 +32,14 @@ def menu() -> None:
 
     user_input = input("Input number\n"
                        "1. Scan whole card list\n"
-                       "2. List amount of missing 1-4 diamond cards\n"
-                       "3. Config setup\n"
-                       "4. which_pack_open()\n"
-                       "5. open_promo()\n"
-                       "6. screenshot()\n"
-                       "7. is_scrcpy_on()\n")
+                       "2. Scan selected set\n"
+                       "3. List amount of missing 1-4 diamond cards\n"
+                       "4. Config setup\n"
+                       "5. which_pack_open()\n"
+                       "6. open_promo()\n"
+                       "7. screenshot()\n"
+                       "8. is_scrcpy_on()\n"
+                       "9. tab_detection()\n")
     if user_input == 'q':
         exit()
     try:
@@ -49,20 +51,22 @@ def menu() -> None:
     if user_input == 1:
         count_all_cards()
     elif user_input == 2:
-        list_missing_cards()
+        scan_set(input('input set_num '))
     elif user_input == 3:
-        config_setup()
+        list_missing_cards()
     elif user_input == 4:
+        config_setup()
+    elif user_input == 5:
         #TO-DO: add change card_threshold value
         which_pack_open()
-    elif user_input == 5:
-        open_promo()
     elif user_input == 6:
-        screenshot()
+        open_promo()
     elif user_input == 7:
+        screenshot()
+    elif user_input == 8:
         result = is_scrcpy_on()
         print(f'{result=}')
-    elif user_input == 8:
+    elif user_input == 9:
         tab_detection()
     else:
         pass
@@ -303,6 +307,55 @@ def list_missing_cards() -> None:
         for rarity, amount in values.items():
             print(f'{rarity} - {amount}')
     con.close()
+
+
+# take set_num as an input for now. TO-DO: menu
+def scan_set(set_num: str) -> None:
+    con = sqlite3.connect('PokeDB.db')
+    cur = con.cursor()
+    pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}' AND rarity in ('1_diamond', '2_diamond', '3_diamond', '4_diamond')").fetchall()
+
+    input(f'Switch to all cards view (5 columns instade of 3) and turn on "Cards with rarity if * or higher"\nSelect {pokemons[0]} and press Enter')
+
+    progres_bar_width = COLUMNS - 20
+    none_detected_dict = {}
+    for i, pokemon in enumerate(pokemons):
+        screenshot_and_crop_area(area=(235, 1727, 292, 1771), name='number')
+        card_amount = count_card(threshold=0.95)
+        move_card_forward()
+
+        bar = '['
+        progres = (i + 1) * 100 / len(pokemons)
+        for _ in range(floor(progres * progres_bar_width / 100)):
+            bar += '|'
+        for _ in range(floor(progres * progres_bar_width / 100), progres_bar_width):
+            bar += ' '
+        bar += ']'
+        print(f'\r{bar} {progres:06.2f}% ', end='', flush=True)
+
+        if card_amount is None:
+            move_card_backward()
+            sleep(1)
+            screenshot_and_crop_area(area=(235, 1727, 292, 1771), name='number')
+            card_amount = count_card(threshold=0.95)
+            none_detected_dict[pokemon[1]] = card_amount
+            sleep(1)
+            move_card_forward()
+        if card_amount == 0:
+            cur.execute(f"UPDATE normal_cards SET amount = 0 WHERE id = {pokemon[0]};")
+        elif card_amount >= 1:
+            cur.execute(f"UPDATE normal_cards SET amount = {card_amount} WHERE id = {pokemon[0]};")
+        else:
+            print(f"\nUNEXPECTED BEHAVIOR OF count_card() -> {card_amount}")
+    con.commit()
+    con.close()
+
+    print(f'detected None:')
+    for k, v in none_detected_dict.items():
+        print(k, v)
+    print()
+    pass
+
 
 
 def count_all_cards() -> None:
