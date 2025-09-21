@@ -26,9 +26,9 @@ def main() -> None:
 
 
 def menu() -> None:
-    if not is_scrcpy_on():
-        print('scrcpy is off')
-        exit()
+    # if not is_scrcpy_on():
+    #     print('scrcpy is off')
+    #     exit()
 
     user_input = input("Input number\n"
                        "1. Scan whole card list\n"
@@ -68,6 +68,7 @@ def menu() -> None:
         print(f'{result=}')
     elif user_input == 9:
         tab_detection()
+        print(tab_detection())
     else:
         pass
 
@@ -86,14 +87,32 @@ def press(position: Tuple[int, int, int, int]) -> None:
     run(["adb", "shell", "input", "tap", x, y])
 
 
-def tab_detection():
+def tab_detection() -> str:
     screenshot_and_crop_area(area=(0, 2260, 1080, 2400), name='tabbar')
     screenshot_and_crop_area(area=(0, 2260, 216, 2400), name='home')
     screenshot_and_crop_area(area=(216, 2260, 432, 2400), name='cards')
     screenshot_and_crop_area(area=(432, 2260, 648, 2400), name='social')
     screenshot_and_crop_area(area=(648, 2260, 864, 2400), name='battle')
 
+    home_selected = compare_img(template_path='./images/tabbar/selected/home.png', image_path='./temp/tabbar.png')
+    cards_selected = compare_img(template_path='./images/tabbar/selected/cards.png', image_path='./temp/tabbar.png')
+    social_selected = compare_img(template_path='./images/tabbar/selected/social.png', image_path='./temp/tabbar.png')
+    battle_selected = compare_img(template_path='./images/tabbar/selected/battle.png', image_path='./temp/tabbar.png')
 
+    tab_confidence = [home_selected, cards_selected, social_selected, battle_selected]
+    print(tab_confidence.index(max(tab_confidence)))
+    tab_max_index =  tab_confidence.index(max(tab_confidence))
+
+    if tab_max_index == 0:
+        return 'home'
+    elif tab_max_index == 1:
+        return 'cards'
+    elif tab_max_index == 2:
+        return 'social'
+    elif tab_max_index == 3:
+        return 'battle'
+    else:
+        return ''
 
 def claim_all_rewards() -> None:
     #TO-DO: Navigate to the rewards
