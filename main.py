@@ -26,9 +26,9 @@ def main() -> None:
 
 
 def menu() -> None:
-    # if not is_scrcpy_on():
-    #     print('scrcpy is off')
-    #     exit()
+    if not is_scrcpy_on():
+        print('scrcpy is off')
+        exit()
 
     user_input = input("Input number\n"
                        "1. Scan whole card list\n"
@@ -67,7 +67,6 @@ def menu() -> None:
         result = is_scrcpy_on()
         print(f'{result=}')
     elif user_input == 9:
-        tab_detection()
         print(tab_detection())
     else:
         pass
@@ -89,10 +88,11 @@ def press(position: Tuple[int, int, int, int]) -> None:
 
 def tab_detection() -> str:
     screenshot_and_crop_area(area=(0, 2260, 1080, 2400), name='tabbar')
-    screenshot_and_crop_area(area=(0, 2260, 216, 2400), name='home')
-    screenshot_and_crop_area(area=(216, 2260, 432, 2400), name='cards')
-    screenshot_and_crop_area(area=(432, 2260, 648, 2400), name='social')
-    screenshot_and_crop_area(area=(648, 2260, 864, 2400), name='battle')
+    crop(image_path='./temp/screen.png', area=(0, 2260, 216, 2400), name='home')
+    crop(image_path='./temp/screen.png', area=(0, 2260, 216, 2400), name='home')
+    crop(image_path='./temp/screen.png', area=(216, 2260, 432, 2400), name='cards')
+    crop(image_path='./temp/screen.png', area=(432, 2260, 648, 2400), name='social')
+    crop(image_path='./temp/screen.png', area=(648, 2260, 864, 2400), name='battle')
 
     home_selected = compare_img(template_path='./images/tabbar/selected/home.png', image_path='./temp/tabbar.png')
     cards_selected = compare_img(template_path='./images/tabbar/selected/cards.png', image_path='./temp/tabbar.png')
@@ -100,7 +100,6 @@ def tab_detection() -> str:
     battle_selected = compare_img(template_path='./images/tabbar/selected/battle.png', image_path='./temp/tabbar.png')
 
     tab_confidence = [home_selected, cards_selected, social_selected, battle_selected]
-    print(tab_confidence.index(max(tab_confidence)))
     tab_max_index =  tab_confidence.index(max(tab_confidence))
 
     if tab_max_index == 0:
@@ -452,7 +451,11 @@ def screenshot() -> None:
 
 def screenshot_and_crop_area(area: Tuple[int, int, int, int], name:str) -> None:
     screenshot()
-    img = Image.open("./temp/screen.png")
+    crop(image_path='./temp/screen.png', area=area, name=name)
+
+
+def crop(image_path: object, area: Tuple[int, int, int, int], name: str) -> None:
+    img = Image.open(image_path)
     crop_area = area
     cropped_img = img.crop(crop_area)
     cropped_img.save(f"./temp/{name}.png")
