@@ -99,19 +99,23 @@ def tab_detection() -> str:
     social_selected = compare_img(template_path='./images/tabbar/selected/social.png', image_path='./temp/tabbar.png')
     battle_selected = compare_img(template_path='./images/tabbar/selected/battle.png', image_path='./temp/tabbar.png')
 
+    threshold = 0.9
     tab_confidence = [home_selected, cards_selected, social_selected, battle_selected]
-    tab_max_index =  tab_confidence.index(max(tab_confidence))
+    for i in tab_confidence:
+        print(f'{i:.2f}')
+    tab_over_threshold = [i for i in tab_confidence  if i > threshold]
 
-    if tab_max_index == 0:
-        return 'home'
-    elif tab_max_index == 1:
-        return 'cards'
-    elif tab_max_index == 2:
-        return 'social'
-    elif tab_max_index == 3:
-        return 'battle'
+    if home_selected in tab_over_threshold:
+        return 'home_selected'
+    elif cards_selected in tab_over_threshold:
+        return 'cards_selected'
+    elif social_selected in tab_over_threshold:
+        return 'social_selected'
+    elif battle_selected in tab_over_threshold:
+        return 'battle_selected'
     else:
         return ''
+
 
 def claim_all_rewards() -> None:
     #TO-DO: Navigate to the rewards
