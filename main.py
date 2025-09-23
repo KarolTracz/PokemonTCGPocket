@@ -4,8 +4,8 @@ from time import sleep
 from json import load, dumps
 from os import listdir
 from os.path import join as path_join
-from subprocess import run
-from typing import Tuple, List
+from subprocess import run, Popen
+from typing import Tuple
 from math import floor
 from shutil import get_terminal_size
 import sqlite3
@@ -27,8 +27,15 @@ def main() -> None:
 
 def menu() -> None:
     if not is_scrcpy_on():
-        print('scrcpy is off')
-        exit()
+        user_input = input('scrcpy is off. Do you want to run it? y/n\n').lower()
+        if user_input == 'y':
+            Popen(['scrcpy', '--turn-screen-off', '--no-audio'])
+            sleep(1)
+        elif user_input == 'debug':
+            pass
+        else:
+            print('you need to run scrcpy')
+            exit()
 
     user_input = input("Input number\n"
                        "1. Scan whole card list\n"
@@ -38,7 +45,7 @@ def menu() -> None:
                        "5. which_pack_open()\n"
                        "6. open_promo()\n"
                        "7. screenshot()\n"
-                       "8. is_scrcpy_on()\n"
+                       "8. claim_all_rewards()\n"
                        "9. tab_detection()\n")
     if user_input == 'q':
         exit()
@@ -64,8 +71,7 @@ def menu() -> None:
     elif user_input == 7:
         screenshot()
     elif user_input == 8:
-        result = is_scrcpy_on()
-        print(f'{result=}')
+        claim_all_rewards()
     elif user_input == 9:
         print(tab_detection())
     else:
@@ -88,7 +94,6 @@ def press(position: Tuple[int, int, int, int]) -> None:
 
 def tab_detection() -> str:
     screenshot_and_crop_area(area=(0, 2260, 1080, 2400), name='tabbar')
-    crop(image_path='./temp/screen.png', area=(0, 2260, 216, 2400), name='home')
     crop(image_path='./temp/screen.png', area=(0, 2260, 216, 2400), name='home')
     crop(image_path='./temp/screen.png', area=(216, 2260, 432, 2400), name='cards')
     crop(image_path='./temp/screen.png', area=(432, 2260, 648, 2400), name='social')
@@ -118,11 +123,22 @@ def tab_detection() -> str:
 
 
 def claim_all_rewards() -> None:
-    #TO-DO: Navigate to the rewards
+    tab = tab_detection()
+    if tab != 'home_selected':
+        press(position=(40, 2270, 210, 2390))
+        sleep(5)
+    elif tab == '':
+        print(f'{tab=}')
+        exit()
 
+    # TO-DO: Navigate to the rewards
+
+    gift_icon_pos = (920, 260, 1020, 360)
     claim_all_pos = (700, 1940, 1000, 2020)
-    ok_pos=(375, 1475, 700, 1600)
+    ok_pos = (375, 1475, 700, 1600)
 
+    press(position=gift_icon_pos)
+    sleep(2)
     press(position=claim_all_pos)
     sleep(2)
     press(position=ok_pos)
@@ -458,7 +474,7 @@ def screenshot_and_crop_area(area: Tuple[int, int, int, int], name:str) -> None:
     crop(image_path='./temp/screen.png', area=area, name=name)
 
 
-def crop(image_path: object, area: Tuple[int, int, int, int], name: str) -> None:
+def crop(image_path: str, area: Tuple[int, int, int, int], name: str) -> None:
     img = Image.open(image_path)
     crop_area = area
     cropped_img = img.crop(crop_area)
