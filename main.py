@@ -351,7 +351,9 @@ def list_missing_cards() -> None:
 def scan_set(set_num: str) -> None:
     con = sqlite3.connect('PokeDB.db')
     cur = con.cursor()
-    pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}' AND rarity in ('1_diamond', '2_diamond', '3_diamond', '4_diamond')").fetchall()
+
+    # pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}' AND rarity in ('1_diamond', '2_diamond', '3_diamond', '4_diamond')").fetchall()
+    pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
 
     input(f'Switch to all cards view (5 columns instade of 3) and turn on "Cards with rarity if * or higher"\nSelect {pokemons[0]} and press Enter')
 
@@ -403,7 +405,7 @@ def count_all_cards() -> None:
     con.close()
 
     start = 0
-    commit_interval = 10
+    commit_interval = 100
     progres_bar_width = COLUMNS - 20
 
     input('Switch to all cards view (5 columns instade of 3) and turn on "Cards with rarity if * or higher"\nSelect A1 001 Bulbasaur and press Enter')
