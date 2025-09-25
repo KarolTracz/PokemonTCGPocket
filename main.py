@@ -58,7 +58,8 @@ def menu() -> None:
     if user_input == 1:
         count_all_cards()
     elif user_input == 2:
-        scan_set(input('input set_num '))
+        set_and_rarity = select_set_and_rarity()
+        scan_set(set_and_rarity)
     elif user_input == 3:
         list_missing_cards()
     elif user_input == 4:
@@ -93,16 +94,16 @@ def press(position: Tuple[int, int, int, int]) -> None:
 
 
 def tab_detection() -> str:
-    screenshot_and_crop_area(area=(0, 2260, 1080, 2400), name='tabbar')
+    screenshot_and_crop_area(area=(0, 2260, 1080, 2400), name='tab_bar')
     crop(image_path='./temp/screen.png', area=(0, 2260, 216, 2400), name='home')
     crop(image_path='./temp/screen.png', area=(216, 2260, 432, 2400), name='cards')
     crop(image_path='./temp/screen.png', area=(432, 2260, 648, 2400), name='social')
     crop(image_path='./temp/screen.png', area=(648, 2260, 864, 2400), name='battle')
 
-    home_selected = compare_img(template_path='./images/tabbar/selected/home.png', image_path='./temp/tabbar.png')
-    cards_selected = compare_img(template_path='./images/tabbar/selected/cards.png', image_path='./temp/tabbar.png')
-    social_selected = compare_img(template_path='./images/tabbar/selected/social.png', image_path='./temp/tabbar.png')
-    battle_selected = compare_img(template_path='./images/tabbar/selected/battle.png', image_path='./temp/tabbar.png')
+    home_selected = compare_img(template_path='images/tab_bar/selected/home.png', image_path='temp/tab_bar.png')
+    cards_selected = compare_img(template_path='images/tab_bar/selected/cards.png', image_path='temp/tab_bar.png')
+    social_selected = compare_img(template_path='images/tab_bar/selected/social.png', image_path='temp/tab_bar.png')
+    battle_selected = compare_img(template_path='images/tab_bar/selected/battle.png', image_path='temp/tab_bar.png')
 
     threshold = 0.9
     tab_confidence = [home_selected, cards_selected, social_selected, battle_selected]
@@ -128,10 +129,8 @@ def claim_all_rewards() -> None:
         press(position=(40, 2270, 210, 2390))
         sleep(5)
     elif tab == '':
-        print(f'{tab=}')
+        print(f'exit because tab_detection() -> {tab=}')
         exit()
-
-    # TO-DO: Navigate to the rewards
 
     gift_icon_pos = (920, 260, 1020, 360)
     claim_all_pos = (700, 1940, 1000, 2020)
@@ -347,13 +346,44 @@ def list_missing_cards() -> None:
     con.close()
 
 
+def select_set_and_rarity() -> Tuple[Tuple[str], Tuple[str]]:
+    sets = select_set()
+    rarity = select_rarity()
+
+    return sets, rarity
+
+
+def select_set() -> Tuple[str]:
+    return_list = []
+    while True:
+        user_input = input('input set num separate by space. eg. "[a1 a2 a3]"\ninput "q" to quit adding sets\ninput "rm a1 a2" to remove a1 and a2 from current selection\n').lower()
+        splitted_input = user_input.split(' ')
+        if splitted_input[0] == 'rm':
+            for i in splitted_input[1:]:
+                return_list.pop(return_list.index(i))
+        elif splitted_input[0] == 'q':
+            break
+        else:
+            for i in splitted_input:
+                return_list.append(i)
+        print(f'currently selected {return_list}')
+    return tuple(return_list)
+
+
+def select_rarity():
+    pass
+
+
 # take set_num as an input for now. TO-DO: menu
-def scan_set(set_num: str) -> None:
+def scan_set(set_and_rarity: Tuple[Tuple[str], Tuple[str]]) -> None:
     con = sqlite3.connect('PokeDB.db')
     cur = con.cursor()
 
+    sets, rarities = set_and_rarity[0], set_and_rarity[1]
+    print(sets, sets[0])
+    print(f'{type(sets)=} {type(rarities)=}')
     # pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}' AND rarity in ('1_diamond', '2_diamond', '3_diamond', '4_diamond')").fetchall()
-    pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
+    pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{sets[0]}' AND rarity in {rarities}").fetchall()
 
     input(f'Switch to all cards view (5 columns instade of 3) and turn on "Cards with rarity if * or higher"\nSelect {pokemons[0]} and press Enter')
 
@@ -395,7 +425,6 @@ def scan_set(set_num: str) -> None:
         print(k, v)
     print()
     pass
-
 
 
 def count_all_cards() -> None:
@@ -466,6 +495,7 @@ def count_card(threshold: float = 0.95) -> int | None:
     else:
         return None
 
+
 def screenshot() -> None:
     with open('./temp/screen.png', "wb") as f:
         run(["adb", "exec-out", "screencap", "-p"], stdout=f)
@@ -486,8 +516,8 @@ def crop(image_path: str, area: Tuple[int, int, int, int], name: str) -> None:
 def get_all_sets(sql_db: str) -> set:
     con = sqlite3.connect(sql_db)
     cur = con.cursor()
-    res = set(cur.execute("SELECT set_num FROM normal_cards"))
-    return_set = sorted({i[0] for i in res})
+    res = cur.execute("SELECT set_num FROM normal_cards")
+    return_set = set(sorted({i[0] for i in res}))
     return return_set
 
 
@@ -502,6 +532,7 @@ def move_card_backward() -> None:
         str(x2), str(y2), str(x1), str(y1), str(int(duration))
     ])
     sleep(0.2)
+
 
 def move_card_forward() -> None:
     x1, y1 = randrange(700, 1000), randrange(1850, 2175)
