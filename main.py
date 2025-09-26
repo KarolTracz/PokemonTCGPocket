@@ -360,7 +360,10 @@ def select_set() -> Tuple[str]:
         splitted_input = user_input.split(' ')
         if splitted_input[0] == 'rm':
             for i in splitted_input[1:]:
-                return_list.pop(return_list.index(i))
+                try:
+                    return_list.pop(return_list.index(i))
+                except ValueError:
+                    print(f'\n Value "{i}" not found in list: {return_list}\n')
         elif splitted_input[0] == 'q':
             break
         else:
@@ -370,8 +373,12 @@ def select_set() -> Tuple[str]:
     return tuple(return_list)
 
 
-def select_rarity():
-    pass
+def select_rarity(full_set=True) -> Tuple[str]:
+    if full_set:
+        return '1_diamond', '2_diamond', '3_diamond', '4_diamond', '1_star', '2_star', '3_star', '1_shiny', '2_shiny', 'crown'
+    else:
+        return '1_diamond', '2_diamond', '3_diamond', '4_diamond'
+
 
 
 # take set_num as an input for now. TO-DO: menu
@@ -380,12 +387,10 @@ def scan_set(set_and_rarity: Tuple[Tuple[str], Tuple[str]]) -> None:
     cur = con.cursor()
 
     sets, rarities = set_and_rarity[0], set_and_rarity[1]
-    print(sets, sets[0])
-    print(f'{type(sets)=} {type(rarities)=}')
+    print(f'{type(sets)=} {sets} {type(rarities)=} {rarities}')
     # pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}' AND rarity in ('1_diamond', '2_diamond', '3_diamond', '4_diamond')").fetchall()
-    pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{sets[0]}' AND rarity in {rarities}").fetchall()
-
-    input(f'Switch to all cards view (5 columns instade of 3) and turn on "Cards with rarity if * or higher"\nSelect {pokemons[0]} and press Enter')
+    pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num in {sets} AND rarity in {rarities}").fetchall()
+    input(f'Switch to all cards view (5 columns instade of 3) and turn on "Cards with rarity if * or higher"\nSelect {pokemons[0][1:4]} and press Enter')
 
     progres_bar_width = COLUMNS - 20
     none_detected_dict = {}
