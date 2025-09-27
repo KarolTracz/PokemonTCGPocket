@@ -374,6 +374,10 @@ def select_set() -> Tuple[str]:
 
 
 def select_rarity(full_set=True) -> Tuple[str]:
+    user_input = input('Do you want to scan full set (y/n)\n').lower()
+    if user_input == 'n':
+        full_set = False
+
     if full_set:
         return '1_diamond', '2_diamond', '3_diamond', '4_diamond', '1_star', '2_star', '3_star', '1_shiny', '2_shiny', 'crown'
     else:
@@ -383,53 +387,57 @@ def select_rarity(full_set=True) -> Tuple[str]:
 
 # take set_num as an input for now. TO-DO: menu
 def scan_set(set_and_rarity: Tuple[Tuple[str], Tuple[str]]) -> None:
-    con = sqlite3.connect('PokeDB.db')
-    cur = con.cursor()
+
 
     sets, rarities = set_and_rarity[0], set_and_rarity[1]
     print(f'{type(sets)=} {sets} {type(rarities)=} {rarities}')
     # pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}' AND rarity in ('1_diamond', '2_diamond', '3_diamond', '4_diamond')").fetchall()
-    pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num in {sets} AND rarity in {rarities}").fetchall()
-    input(f'Switch to all cards view (5 columns instade of 3) and turn on "Cards with rarity if * or higher"\nSelect {pokemons[0][1:4]} and press Enter')
 
-    progres_bar_width = COLUMNS - 20
-    none_detected_dict = {}
-    for i, pokemon in enumerate(pokemons):
-        screenshot_and_crop_area(area=(235, 1727, 292, 1771), name='number')
-        card_amount = count_card(threshold=0.95)
-        move_card_forward()
+    print(f'Switch to all cards view (5 columns instade of 3) and turn on "Cards with rarity if * or higher"')
 
-        bar = '['
-        progres = (i + 1) * 100 / len(pokemons)
-        for _ in range(floor(progres * progres_bar_width / 100)):
-            bar += '|'
-        for _ in range(floor(progres * progres_bar_width / 100), progres_bar_width):
-            bar += ' '
-        bar += ']'
-        print(f'\r{bar} {progres:06.2f}% ', end='', flush=True)
+    for set in sets:
+        con = sqlite3.connect('PokeDB.db')
+        cur = con.cursor()
+        pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set}' AND rarity in {rarities}").fetchall()
+        input(f'Select {pokemons[0][1:4]} and press Enter')
 
-        if card_amount is None:
-            move_card_backward()
-            sleep(1)
+        progres_bar_width = COLUMNS - 20
+        none_detected_dict = {}
+        for i, pokemon in enumerate(pokemons):
             screenshot_and_crop_area(area=(235, 1727, 292, 1771), name='number')
             card_amount = count_card(threshold=0.95)
-            none_detected_dict[pokemon[1]] = card_amount
-            sleep(1)
             move_card_forward()
-        if card_amount == 0:
-            cur.execute(f"UPDATE normal_cards SET amount = 0 WHERE id = {pokemon[0]};")
-        elif card_amount >= 1:
-            cur.execute(f"UPDATE normal_cards SET amount = {card_amount} WHERE id = {pokemon[0]};")
-        else:
-            print(f"\nUNEXPECTED BEHAVIOR OF count_card() -> {card_amount}")
-    con.commit()
-    con.close()
 
-    print(f'detected None:')
-    for k, v in none_detected_dict.items():
-        print(k, v)
-    print()
-    pass
+            bar = '['
+            progres = (i + 1) * 100 / len(pokemons)
+            for _ in range(floor(progres * progres_bar_width / 100)):
+                bar += '|'
+            for _ in range(floor(progres * progres_bar_width / 100), progres_bar_width):
+                bar += ' '
+            bar += ']'
+            print(f'\r{bar} {progres:06.2f}% ', end='', flush=True)
+
+            if card_amount is None:
+                move_card_backward()
+                sleep(1)
+                screenshot_and_crop_area(area=(235, 1727, 292, 1771), name='number')
+                card_amount = count_card(threshold=0.95)
+                none_detected_dict[pokemon[1]] = card_amount
+                sleep(1)
+                move_card_forward()
+            if card_amount == 0:
+                cur.execute(f"UPDATE normal_cards SET amount = 0 WHERE id = {pokemon[0]};")
+            elif card_amount >= 1:
+                cur.execute(f"UPDATE normal_cards SET amount = {card_amount} WHERE id = {pokemon[0]};")
+            else:
+                print(f"\nUNEXPECTED BEHAVIOR OF count_card() -> {card_amount}")
+        con.commit()
+        con.close()
+
+        print(f'detected None:')
+        for k, v in none_detected_dict.items():
+            print(k, v)
+        print()
 
 
 def count_all_cards() -> None:
