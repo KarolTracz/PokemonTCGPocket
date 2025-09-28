@@ -210,7 +210,7 @@ def which_pack_open(card_threshold: int = 1) -> None:
                 not_obtain_pokemons[pokemon['set_num']] = 1
             else:
                 not_obtain_pokemons[pokemon['set_num']] += 1
-    print(not_obtain_pokemons.values())
+    print(not_obtain_pokemons.items())
     for k, v in not_obtain_pokemons.items():
         if v == max(not_obtain_pokemons.values()):
             print(k)
@@ -399,7 +399,8 @@ def scan_set(set_and_rarity: Tuple[Tuple[str], Tuple[str]]) -> None:
         con = sqlite3.connect('PokeDB.db')
         cur = con.cursor()
         pokemons = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set}' AND rarity in {rarities}").fetchall()
-        input(f'Select {pokemons[0][1:4]} and press Enter')
+        if input(f'Select {pokemons[0][1:4]} and press Enter').lower() == 'q':
+            exit()
 
         progres_bar_width = COLUMNS - 20
         none_detected_dict = {}
@@ -408,14 +409,29 @@ def scan_set(set_and_rarity: Tuple[Tuple[str], Tuple[str]]) -> None:
             card_amount = count_card(threshold=0.95)
             move_card_forward()
 
-            bar = '['
-            progres = (i + 1) * 100 / len(pokemons)
-            for _ in range(floor(progres * progres_bar_width / 100)):
-                bar += '|'
-            for _ in range(floor(progres * progres_bar_width / 100), progres_bar_width):
+            # TO-DO: bar show last scanned item not currently visible one.
+            bar = pokemon[1]
+            if card_amount is not None:
+                bar += f' {card_amount}'
+            while len(bar) < progres_bar_width:
                 bar += ' '
-            bar += ']'
-            print(f'\r{bar} {progres:06.2f}% ', end='', flush=True)
+
+            progres = (i + 1) * 100 / len(pokemons)
+            colored_bar = '['
+            for idx, char in enumerate(bar):
+                if floor(100 * idx / len(bar)) < progres:
+                    if char == ' ' and idx > (1 + len(pokemon[1])):
+                        colored_bar += '\033[92m-\033[00m'
+                    else:
+                        colored_bar += '\033[92m{}\033[00m'.format(char)
+                else:
+                    if char == ' ':
+                        colored_bar += ' '
+                    else:
+                        colored_bar += '\033[91m{}\033[00m'.format(char)
+            colored_bar += ']'
+
+            print(f'\r{colored_bar} {progres:5.2f}% ', end='', flush=True)
 
             if card_amount is None:
                 move_card_backward()
