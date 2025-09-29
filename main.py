@@ -417,21 +417,48 @@ def scan_set(set_and_rarity: Tuple[Tuple[str], Tuple[str]]) -> None:
                 bar += ' '
 
             progres = (i + 1) * 100 / len(pokemons)
-            colored_bar = '['
+            colored_bar_1 = '['
+            colored_bar_2 = '['
+            colored_bar_3 = '['
+            colored_bar_4 = '['
             for idx, char in enumerate(bar):
                 if floor(100 * idx / len(bar)) < progres:
-                    if char == ' ' and idx > (1 + len(pokemon[1])):
-                        colored_bar += '\033[92m-\033[00m'
+                    if char == ' ':
+                        colored_bar_1 += '\033[92m-\033[00m'
+                        colored_bar_2 += '\033[92m-\033[00m'
+                        colored_bar_3 += '\033[;;42m-\033[00m'
+                        colored_bar_4 += '\033[;32;42m-\033[00m'
+
                     else:
-                        colored_bar += '\033[92m{}\033[00m'.format(char)
+                        colored_bar_1 += '\033[92m{}\033[00m'.format(char)
+                        colored_bar_2 += '\033[92m{}\033[00m'.format(char)
+                        colored_bar_3 += '\033[;;42m{}\033[00m'.format(char)
+                        colored_bar_4 += '\033[;;42m{}\033[00m'.format(char)
                 else:
                     if char == ' ':
-                        colored_bar += ' '
+                        colored_bar_1 += ' '
+                        colored_bar_2 += '\033[91m-\033[00m'
+                        colored_bar_3 += '\033[91m-\033[00m'
+                        colored_bar_4 += '\033[;31;41m \033[00m'
                     else:
-                        colored_bar += '\033[91m{}\033[00m'.format(char)
-            colored_bar += ']'
+                        colored_bar_1 += '\033[91m{}\033[00m'.format(char)
+                        colored_bar_2 += '\033[91m{}\033[00m'.format(char)
+                        colored_bar_3 += '\033[91m{}\033[00m'.format(char)
+                        colored_bar_4 += '\033[;;41m{}\033[00m'.format(char)
 
-            print(f'\r{colored_bar} {progres:5.2f}% ', end='', flush=True)
+            colored_bar_1 += ']'
+            colored_bar_2 += ']'
+            colored_bar_3 += ']'
+            colored_bar_4 += ']'
+
+            print(f'\r{colored_bar_1} {progres:5.2f}% ')
+            print()
+            print(f'\r{colored_bar_2} {progres:5.2f}% ')
+            print()
+            print(f'\r{colored_bar_3} {progres:5.2f}% ')
+            print()
+            print(f'\r{colored_bar_4} {progres:5.2f}% ')
+            print('\n\n')
 
             if card_amount is None:
                 move_card_backward()
