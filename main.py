@@ -17,10 +17,7 @@ from PIL import Image
 with open('config.json', 'r') as f:
     config = load(f)
 
-COLUMNS, ROWS = get_terminal_size()
-
 def main() -> None:
-    print(f'{ROWS=}, {COLUMNS=}')
     while True:
         menu()
 
@@ -384,10 +381,74 @@ def select_rarity(full_set=True) -> Tuple[str]:
         return '1_diamond', '2_diamond', '3_diamond', '4_diamond'
 
 
+def draw_loading_bar(style_num: str, pokemon: tuple, iteration:int, loop_size:int, **kwargs) -> None:
+    card_amount = kwargs.get('card_amount', None)
+    columns, _ = get_terminal_size()
+    progres_bar_width = columns - 10
+
+    styles = {
+        '1': {
+            'green_space': '\033[92m-\033[00m',
+            'green_char': '\033[92m{}\033[00m',
+            'red_space': ' ',
+            'red_char': '\033[91m{}\033[00m'
+        },
+        '2': {
+            'green_space': '\033[92m-\033[00m',
+            'green_char': '\033[92m{}\033[00m',
+            'red_space': '\033[91m-\033[00m',
+            'red_char': '\033[91m{}\033[00m'
+        },
+        '3': {
+            'green_space': '\033[;;42m \033[00m',
+            'green_char': '\033[;;42m{}\033[00m',
+            'red_space': ' ',
+            'red_char': '{}'
+        },
+        '4': {
+            'green_space': '\033[;;42m-\033[00m',
+            'green_char': '\033[;;42m{}\033[00m',
+            'red_space': '\033[91m-\033[00m',
+            'red_char': '\033[91m{}\033[00m'
+        },
+        '5': {
+            'green_space': '\033[;;42m-\033[00m',
+            'green_char': '\033[;;42m{}\033[00m',
+            'red_space': '\033[;;41m-\033[00m',
+            'red_char': '\033[;;41m{}\033[00m'
+        }
+    }
+
+    style = styles[style_num]
+
+    bar = pokemon[1]
+    if card_amount is not None:
+        bar += f' {card_amount}'
+    while len(bar) < progres_bar_width:
+        bar += ' '
+
+    progres = (iteration + 1) * 100 / loop_size
+
+    colored_bar = '['
+    for idx, char in enumerate(bar):
+        if floor(100 * idx / len(bar)) < progres:
+            if char == ' ':
+                colored_bar += style['green_space']
+            else:
+                colored_bar += style['green_char'].format(char)
+        else:
+            if char == ' ':
+                colored_bar += style['red_space']
+            else:
+                colored_bar += style['red_char'].format(char)
+
+    colored_bar += ']'
+
+    print(f'\r{colored_bar} {progres:5.2f}% ', end='', flush=True)
+
 
 # take set_num as an input for now. TO-DO: menu
 def scan_set(set_and_rarity: Tuple[Tuple[str], Tuple[str]]) -> None:
-
 
     sets, rarities = set_and_rarity[0], set_and_rarity[1]
     print(f'{type(sets)=} {sets} {type(rarities)=} {rarities}')
@@ -402,7 +463,6 @@ def scan_set(set_and_rarity: Tuple[Tuple[str], Tuple[str]]) -> None:
         if input(f'Select {pokemons[0][1:4]} and press Enter').lower() == 'q':
             exit()
 
-        progres_bar_width = COLUMNS - 20
         none_detected_dict = {}
         for i, pokemon in enumerate(pokemons):
             screenshot_and_crop_area(area=(235, 1727, 292, 1771), name='number')
@@ -410,55 +470,7 @@ def scan_set(set_and_rarity: Tuple[Tuple[str], Tuple[str]]) -> None:
             move_card_forward()
 
             # TO-DO: bar show last scanned item not currently visible one.
-            bar = pokemon[1]
-            if card_amount is not None:
-                bar += f' {card_amount}'
-            while len(bar) < progres_bar_width:
-                bar += ' '
-
-            progres = (i + 1) * 100 / len(pokemons)
-            colored_bar_1 = '['
-            colored_bar_2 = '['
-            colored_bar_3 = '['
-            colored_bar_4 = '['
-            for idx, char in enumerate(bar):
-                if floor(100 * idx / len(bar)) < progres:
-                    if char == ' ':
-                        colored_bar_1 += '\033[92m-\033[00m'
-                        colored_bar_2 += '\033[92m-\033[00m'
-                        colored_bar_3 += '\033[;;42m-\033[00m'
-                        colored_bar_4 += '\033[;32;42m-\033[00m'
-
-                    else:
-                        colored_bar_1 += '\033[92m{}\033[00m'.format(char)
-                        colored_bar_2 += '\033[92m{}\033[00m'.format(char)
-                        colored_bar_3 += '\033[;;42m{}\033[00m'.format(char)
-                        colored_bar_4 += '\033[;;42m{}\033[00m'.format(char)
-                else:
-                    if char == ' ':
-                        colored_bar_1 += ' '
-                        colored_bar_2 += '\033[91m-\033[00m'
-                        colored_bar_3 += '\033[91m-\033[00m'
-                        colored_bar_4 += '\033[;31;41m \033[00m'
-                    else:
-                        colored_bar_1 += '\033[91m{}\033[00m'.format(char)
-                        colored_bar_2 += '\033[91m{}\033[00m'.format(char)
-                        colored_bar_3 += '\033[91m{}\033[00m'.format(char)
-                        colored_bar_4 += '\033[;;41m{}\033[00m'.format(char)
-
-            colored_bar_1 += ']'
-            colored_bar_2 += ']'
-            colored_bar_3 += ']'
-            colored_bar_4 += ']'
-
-            print(f'\r{colored_bar_1} {progres:5.2f}% ')
-            print()
-            print(f'\r{colored_bar_2} {progres:5.2f}% ')
-            print()
-            print(f'\r{colored_bar_3} {progres:5.2f}% ')
-            print()
-            print(f'\r{colored_bar_4} {progres:5.2f}% ')
-            print('\n\n')
+            draw_loading_bar(style_num='3', pokemon=pokemon, iteration=i, loop_size=len(pokemons), card_amount=card_amount)
 
             if card_amount is None:
                 move_card_backward()
@@ -474,6 +486,8 @@ def scan_set(set_and_rarity: Tuple[Tuple[str], Tuple[str]]) -> None:
                 cur.execute(f"UPDATE normal_cards SET amount = {card_amount} WHERE id = {pokemon[0]};")
             else:
                 print(f"\nUNEXPECTED BEHAVIOR OF count_card() -> {card_amount}")
+
+        print()
         con.commit()
         con.close()
 
@@ -491,7 +505,6 @@ def count_all_cards() -> None:
 
     start = 0
     commit_interval = 100
-    progres_bar_width = COLUMNS - 20
 
     input('Switch to all cards view (5 columns instade of 3) and turn on "Cards with rarity if * or higher"\nSelect A1 001 Bulbasaur and press Enter')
     none_detected_dict = {}
@@ -506,14 +519,7 @@ def count_all_cards() -> None:
             card_amount = count_card(threshold=0.95)
             move_card_forward()
 
-            bar = '['
-            progres = (i + 1) * 100 / len(pokemons)
-            for _ in range(floor(progres * progres_bar_width / 100)):
-                bar += '|'
-            for _ in range(floor(progres * progres_bar_width / 100), progres_bar_width):
-                bar += ' '
-            bar += ']'
-            print(f'\r{bar} {progres:06.2f}% {start}/{last[0][0]}', end='', flush=True)
+            draw_loading_bar(style_num='3', pokemon=pokemon, iteration=i, loop_size=len(pokemons), card_amount=card_amount)
 
             if card_amount is None:
                 move_card_backward()
@@ -529,6 +535,8 @@ def count_all_cards() -> None:
                 cur.execute(f"UPDATE normal_cards SET amount = {card_amount} WHERE id = {pokemon[0]};")
             else:
                 print(f"\nUNEXPECTED BEHAVIOR OF count_card() -> {card_amount}")
+
+        print()
         start += commit_interval
         con.commit()
         con.close()
