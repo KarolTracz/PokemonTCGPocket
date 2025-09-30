@@ -18,8 +18,12 @@ with open('config.json', 'r') as f:
     config = load(f)
 
 def main() -> None:
-    while True:
-        menu()
+    overall_counts, avg_per_card, avg_per_pack = simulate_many(trials=1000, packs_per_trial=60)
+    print(overall_counts)
+    print(avg_per_card)
+    print(avg_per_pack)
+    # while True:
+    #     menu()
 
 
 def menu() -> None:
@@ -214,11 +218,11 @@ def which_pack_open(card_threshold: int = 1) -> None:
     con.close()
 
 
-def simulate_many(trials: int, packs_per_trial: int, have_pack_shinny: bool):
+def simulate_many(trials: int, packs_per_trial: int, have_pack_shinny: bool = True):
     overall_counts = Counter()
 
     for _ in range(trials):
-        overall_counts.update(open_X_packs(packs_per_trial, have_pack_shinny))
+        overall_counts.update(open_a4b_packs(packs_per_trial, have_pack_shinny))
 
     total_packs = trials * packs_per_trial
     total_cards = total_packs * 5
@@ -244,6 +248,56 @@ def open_X_packs(amount: int, have_pack_shinny: bool):
         sum_list.append(next(gen_5))
 
     return Counter(sum_list)
+
+def open_a4b_packs(amount: int, *args):
+    sum_list= ['1_diamond' for _ in range(amount)]
+    for i in ['4_diamond' for _ in range(amount)]:
+        sum_list.append(i)
+
+    gen_2 = roll_a4b_2()
+    gen_3 = roll_a4b_3()
+
+    for _ in range(amount):
+        sum_list.append(next(gen_2))
+        sum_list.append(next(gen_3))
+
+    return Counter(sum_list)
+
+def roll_a4b_2():
+    offering_rates = {
+        '1_diamond': 0.1773,
+        '2_diamond': 0.8227,
+    }
+
+    items, probs = zip(*offering_rates.items())
+    cumulative = [sum(probs[:i+1]) for i in range(len(probs))]
+    while True:
+        roll = random.random()
+        for item, threshold in zip(items, cumulative):
+            if roll < threshold:
+                yield item
+                break
+
+def roll_a4b_3():
+    offering_rates = {
+        '1_diamond': 0.23021,
+        '2_diamond': 0.17985,
+        '3_diamond': 0.40659,
+        '1_star': 0.12858,
+        '2_star': 0.025,
+        '3_star': 0.01111,
+        '2_shiny': 0.01667,
+        'crown': 0.00198
+    }
+
+    items, probs = zip(*offering_rates.items())
+    cumulative = [sum(probs[:i+1]) for i in range(len(probs))]
+    while True:
+        roll = random.random()
+        for item, threshold in zip(items, cumulative):
+            if roll < threshold:
+                yield item
+                break
 
 
 def roll_5th_card(is_shinny: bool):
