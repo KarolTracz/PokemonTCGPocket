@@ -6,10 +6,10 @@ with open('pokemon_list.json', 'r', encoding='utf-8') as f:
 
 
 def main() -> None:
-    # pokemon_list = change_rarity(raw_pokemon_list)
+    pokemon_list = change_rarity(raw_pokemon_list)
     # create_database(pokemon_list=pokemon_list)
-    # add_card_2_database(pokemon_list)
-    alt_detection()
+    add_card_2_database(pokemon_list)
+    # alt_detection()
 
 
 def alt_detection() -> None:
@@ -68,9 +68,11 @@ def add_card_2_database(pokemon_list: list):
     for i in raw_normal_cards:
         i = list(i)
         i[6] = None
+        i[8] = None
         normal_cards_in_db.append(tuple(i))
     normal_cards = json2db_data_parser([i for i in pokemon_list if i['id'][:2] != 'pa'])
     new_normal_cards = [i for i in normal_cards if i not in normal_cards_in_db]
+    print(new_normal_cards)
 
     raw_promo_cards = cur.execute("SELECT * FROM promo_cards").fetchall()
     promo_cards_in_db = []
@@ -81,7 +83,7 @@ def add_card_2_database(pokemon_list: list):
     promo_cards = json2db_data_parser([i for i in pokemon_list if i['id'][:2] == 'pa'])
     new_promo_cards = [i for i in promo_cards if i not in promo_cards_in_db]
 
-    cur.executemany("INSERT INTO normal_cards VALUES (?, ?, ?, ?, ?, ?, ?, ?)", new_normal_cards)
+    cur.executemany("INSERT INTO normal_cards VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", new_normal_cards)
     cur.executemany("INSERT INTO promo_cards VALUES (?, ?, ?, ?, ?, ?, ?, ?)", new_promo_cards)
 
     con.commit()
@@ -116,16 +118,29 @@ def json2db_data_parser(json: list) -> list:
     procesed_cards = []
     for i, pokemon in enumerate(json):
         _set, num = pokemon['id'].split('-')
-        pokemon_data = (
-            i,
-            pokemon['name'],
-            _set,
-            num,
-            pokemon['pack'],
-            pokemon['rarity'],
-            None,
-            None
-        )
+        if pokemon['rarity'] == 'promo':
+            pokemon_data = (
+                i,
+                pokemon['name'],
+                _set,
+                num,
+                pokemon['pack'],
+                pokemon['rarity'],
+                None,
+                None
+            )
+        else:
+            pokemon_data = (
+                i,
+                pokemon['name'],
+                _set,
+                num,
+                pokemon['pack'],
+                pokemon['rarity'],
+                None,
+                None,
+                None
+            )
         procesed_cards.append(pokemon_data)
     return procesed_cards
 
