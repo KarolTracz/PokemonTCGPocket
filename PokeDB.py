@@ -6,11 +6,27 @@ with open('pokemon_list.json', 'r', encoding='utf-8') as f:
 
 
 def main() -> None:
-    pokemon_list = change_rarity(raw_pokemon_list)
+    # pokemon_list = change_rarity(raw_pokemon_list)
     # create_database(pokemon_list=pokemon_list)
-    add_card_2_database(pokemon_list)
-    # alt_detection()
+    # add_card_2_database(pokemon_list)
+    alt_detection()
+    mark_foil_cards_in_set('a4b')
 
+def mark_foil_cards_in_set(set_num: str) -> None:
+    con = sqlite3.connect("PokeDB.db")
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+
+    raw_normal_cards = cur.execute(f"SELECT * FROM normal_cards WHERE set_num = '{set_num}'").fetchall()
+
+    last_pokemon = raw_normal_cards[0]
+    for pokemon in raw_normal_cards:
+        if pokemon['name'] == last_pokemon['name'] and pokemon['rarity'] in ('1_diamond', '2_diamond'):
+            cur.execute(f"UPDATE normal_cards SET foil = True WHERE id = {pokemon['id']};")
+        last_pokemon = pokemon
+
+    con.commit()
+    con.close()
 
 def alt_detection() -> None:
     con = sqlite3.connect("PokeDB.db")
