@@ -21,7 +21,7 @@ def mark_foil_cards_in_set(set_num: str) -> None:
 
     last_pokemon = raw_normal_cards[0]
     for pokemon in raw_normal_cards:
-        if pokemon['name'] == last_pokemon['name'] and pokemon['rarity'] in ('1_diamond', '2_diamond'):
+        if pokemon['name'] == last_pokemon['name'] and pokemon['rarity'] in ('1_diamond', '2_diamond', '3_diamond'):
             cur.execute(f"UPDATE normal_cards SET foil = True WHERE id = {pokemon['id']};")
         last_pokemon = pokemon
 

@@ -18,12 +18,12 @@ with open('config.json', 'r') as f:
     config = load(f)
 
 def main() -> None:
-    overall_counts, avg_per_card, avg_per_pack = simulate_many(trials=1000, packs_per_trial=60)
-    print(overall_counts)
-    print(avg_per_card)
-    print(avg_per_pack)
-    # while True:
-    #     menu()
+    # overall_counts, avg_per_card, avg_per_pack = simulate_many(trials=1000, packs_per_trial=60)
+    # print(overall_counts)
+    # print(avg_per_card)
+    # print(avg_per_pack)
+    while True:
+        menu()
 
 
 def menu() -> None:
@@ -206,7 +206,7 @@ def which_pack_open(card_threshold: int = 1) -> None:
         if pokemon['amount'] is None:
             print('You need to scan your whole collection, we dont have data for amount you have')
             break
-        if pokemon['amount'] < card_threshold and pokemon['rarity'] in seek_rarity:
+        if pokemon['amount'] < card_threshold and pokemon['foil'] != True and pokemon['rarity'] in seek_rarity:
             if pokemon['set_num'] not in not_obtain_pokemons:
                 not_obtain_pokemons[pokemon['set_num']] = 1
             else:
