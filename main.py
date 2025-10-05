@@ -250,9 +250,9 @@ def open_X_packs(amount: int, have_pack_shinny: bool):
     return Counter(sum_list)
 
 def open_a4b_packs(amount: int, *args):
-    sum_list= ['1_diamond' for _ in range(amount)]
-    for i in ['4_diamond' for _ in range(amount)]:
-        sum_list.append(i)
+    for i in range(amount):
+        sum_list.append('1_diamond')
+        sum_list.append('4_diamond')
 
     gen_2 = roll_a4b_2()
     gen_3 = roll_a4b_3()
@@ -455,6 +455,7 @@ def draw_loading_bar(style_num: str, pokemon: tuple, iteration:int, loop_size:in
         },
         '3': {
             'green_space': '\033[;;42m \033[00m',
+            'green_space': '\033[;;42m \033[00m',
             'green_char': '\033[;;42m{}\033[00m',
             'red_space': ' ',
             'red_char': '{}'
@@ -475,7 +476,10 @@ def draw_loading_bar(style_num: str, pokemon: tuple, iteration:int, loop_size:in
 
     style = styles[style_num]
 
-    bar = pokemon[1]
+    if pokemon[9]:
+        bar = f'{pokemon[1]} foil'
+    else:
+        bar = f'{pokemon[1]}'
     if card_amount is not None:
         bar += f' {card_amount}'
     while len(bar) < progres_bar_width:
