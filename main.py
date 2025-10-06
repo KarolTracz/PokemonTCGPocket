@@ -18,12 +18,12 @@ with open('config.json', 'r') as f:
     config = load(f)
 
 def main() -> None:
-    overall_counts, avg_per_card, avg_per_pack = simulate_many(trials=1000, packs_per_trial=60)
-    print(overall_counts)
-    print(avg_per_card)
-    print(avg_per_pack)
-    # while True:
-    #     menu()
+    # overall_counts, avg_per_card, avg_per_pack = simulate_many(trials=1000, packs_per_trial=60)
+    # print(overall_counts)
+    # print(avg_per_card)
+    # print(avg_per_pack)
+    while True:
+        menu()
 
 
 def menu() -> None:
@@ -76,6 +76,11 @@ def menu() -> None:
         claim_all_rewards()
     elif user_input == 9:
         print(tab_detection())
+    elif user_input == 10:
+        screenshot_and_crop_area(area=(135, 569, 290, 641), name='is_card_new')
+        is_card_new = compare_img(template_path='images/new_card_tag.png', image_path='temp/is_card_new.png')
+        print(is_card_new)
+
     else:
         pass
 
@@ -108,8 +113,8 @@ def tab_detection() -> str:
 
     threshold = 0.9
     tab_confidence = [home_selected, cards_selected, social_selected, battle_selected]
-    for i in tab_confidence:
-        print(f'{i:.2f}')
+    # for i in tab_confidence:
+    #     print(f'{i:.2f}')
     tab_over_threshold = [i for i in tab_confidence  if i > threshold]
 
     if home_selected in tab_over_threshold:
@@ -172,10 +177,18 @@ def open_promo() -> None:
         sleep(5)
         open_pack()
         sleep(5)
+        screenshot_and_crop_area(area=(135, 569, 290, 641), name='is_card_new')
+        is_card_new_confidance = compare_img(template_path='images/new_card_tag.png', image_path='temp/is_card_new.png')
+
         press(position=tap_and_hold_pos)
         sleep(5)
         press(position=next_pos)
         sleep(5)
+        if is_card_new_confidance > 0.9:
+            print(is_card_new_confidance)
+            press(position=tap_and_hold_pos)
+            sleep(5)
+            sleep(5)
         press(position=ok_pos)
         sleep(2)
 
