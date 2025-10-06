@@ -178,16 +178,19 @@ def open_promo() -> None:
         open_pack()
         sleep(5)
         screenshot_and_crop_area(area=(135, 569, 290, 641), name='is_card_new')
-        is_card_new_confidance = compare_img(template_path='images/new_card_tag.png', image_path='temp/is_card_new.png')
+        is_card_new_confidence = compare_img(template_path='images/new_card_tag.png', image_path='temp/is_card_new.png')
 
         press(position=tap_and_hold_pos)
         sleep(5)
         press(position=next_pos)
         sleep(5)
-        if is_card_new_confidance > 0.9:
-            print(is_card_new_confidance)
+        if is_card_new_confidence > 0.9:
+            print(is_card_new_confidence)
             press(position=tap_and_hold_pos)
             sleep(5)
+            press(position=tap_and_hold_pos)
+            sleep(5)
+            press(position=next_pos)
             sleep(5)
         press(position=ok_pos)
         sleep(2)
