@@ -18,10 +18,11 @@ with open('config.json', 'r') as f:
     config = load(f)
 
 def main() -> None:
-    # overall_counts, avg_per_card, avg_per_pack = simulate_many(trials=1000, packs_per_trial=60)
-    # print(overall_counts)
-    # print(avg_per_card)
-    # print(avg_per_pack)
+    overall_counts, avg_per_card, avg_per_pack, seeking_rarity_found_percent = simulate_many(trials=100, packs_per_trial=90, seeking_rarity='crown')
+    # print(f'{overall_counts=}')
+    # print(f'{avg_per_card=}')
+    # print(f'{avg_per_pack=}')
+    print(f'{seeking_rarity_found_percent=}')
     while True:
         menu()
 
@@ -234,11 +235,17 @@ def which_pack_open(card_threshold: int = 1) -> None:
     con.close()
 
 
-def simulate_many(trials: int, packs_per_trial: int, have_pack_shinny: bool = True):
+def simulate_many(trials: int, packs_per_trial: int, have_pack_shinny: bool = True, seeking_rarity: str = ''):
     overall_counts = Counter()
+    rarity_found_counter = 0
 
     for _ in range(trials):
-        overall_counts.update(open_a4b_packs(packs_per_trial, have_pack_shinny))
+        pack_result = open_a4b_packs(packs_per_trial, have_pack_shinny)
+        overall_counts.update(pack_result)
+
+        if seeking_rarity in pack_result.keys():
+            print(pack_result)
+            rarity_found_counter += 1
 
     total_packs = trials * packs_per_trial
     total_cards = total_packs * 5
@@ -246,7 +253,7 @@ def simulate_many(trials: int, packs_per_trial: int, have_pack_shinny: bool = Tr
     avg_per_card = {k: v / total_cards for k, v in overall_counts.items()}
     avg_per_pack = {k: v / total_packs for k, v in overall_counts.items()}
 
-    return overall_counts, avg_per_card, avg_per_pack
+    return overall_counts, avg_per_card, avg_per_pack, rarity_found_counter/trials
 
 
 def open_X_packs(amount: int, have_pack_shinny: bool):
@@ -266,6 +273,8 @@ def open_X_packs(amount: int, have_pack_shinny: bool):
     return Counter(sum_list)
 
 def open_a4b_packs(amount: int, *args):
+    sum_list= []
+
     for i in range(amount):
         sum_list.append('1_diamond')
         sum_list.append('4_diamond')
@@ -470,7 +479,6 @@ def draw_loading_bar(style_num: str, pokemon: tuple, iteration:int, loop_size:in
             'red_char': '\033[91m{}\033[00m'
         },
         '3': {
-            'green_space': '\033[;;42m \033[00m',
             'green_space': '\033[;;42m \033[00m',
             'green_char': '\033[;;42m{}\033[00m',
             'red_space': ' ',
