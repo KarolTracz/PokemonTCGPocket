@@ -18,11 +18,21 @@ with open('config.json', 'r') as f:
     config = load(f)
 
 def main() -> None:
-    overall_counts, avg_per_card, avg_per_pack, seeking_rarity_found_percent = simulate_many(trials=100, packs_per_trial=90, seeking_rarity='crown')
-    # print(f'{overall_counts=}')
-    # print(f'{avg_per_card=}')
-    # print(f'{avg_per_pack=}')
-    print(f'{seeking_rarity_found_percent=}')
+    _, _, _, seeking_rarity_found_percent_60 = simulate_many(
+        trials=100_000,
+        packs_per_trial=60,
+        seeking_rarity=['crown', '2_shiny', '3_star', '2_star', '1_star', '3_diamond', '2_diamond', '1_diamond']
+    )
+
+    _, _, _, seeking_rarity_found_percent_90 = simulate_many(
+        trials=100_000,
+        packs_per_trial=90,
+        seeking_rarity=['crown', '2_shiny', '3_star', '2_star', '1_star', '3_diamond', '2_diamond', '1_diamond']
+    )
+
+    print(f'{seeking_rarity_found_percent_60=}')
+    print(f'{seeking_rarity_found_percent_90=}')
+
     while True:
         menu()
 
@@ -235,17 +245,20 @@ def which_pack_open(card_threshold: int = 1) -> None:
     con.close()
 
 
-def simulate_many(trials: int, packs_per_trial: int, have_pack_shinny: bool = True, seeking_rarity: str = ''):
+def simulate_many(trials: int, packs_per_trial: int, have_pack_shinny: bool = True, seeking_rarity: list = []):
     overall_counts = Counter()
-    rarity_found_counter = 0
+    rarity_found_counter = {}
 
     for _ in range(trials):
         pack_result = open_a4b_packs(packs_per_trial, have_pack_shinny)
         overall_counts.update(pack_result)
 
-        if seeking_rarity in pack_result.keys():
-            print(pack_result)
-            rarity_found_counter += 1
+        for i in seeking_rarity:
+            if i in pack_result.keys():
+                if i not in rarity_found_counter.keys():
+                    rarity_found_counter[i] = 1
+                else:
+                    rarity_found_counter[i] += 1
 
     total_packs = trials * packs_per_trial
     total_cards = total_packs * 5
@@ -253,7 +266,8 @@ def simulate_many(trials: int, packs_per_trial: int, have_pack_shinny: bool = Tr
     avg_per_card = {k: v / total_cards for k, v in overall_counts.items()}
     avg_per_pack = {k: v / total_packs for k, v in overall_counts.items()}
 
-    return overall_counts, avg_per_card, avg_per_pack, rarity_found_counter/trials
+    rarity_found_in_percent = {k: 100 * v / trials for k, v  in rarity_found_counter.items()}
+    return overall_counts, avg_per_card, avg_per_pack, rarity_found_in_percent
 
 
 def open_X_packs(amount: int, have_pack_shinny: bool):
