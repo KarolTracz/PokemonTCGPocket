@@ -19,13 +19,13 @@ with open('config.json', 'r') as f:
 
 def main() -> None:
     _, _, _, seeking_rarity_found_percent_60 = simulate_many(
-        trials=100_000,
+        trials=1_000,
         packs_per_trial=60,
         seeking_rarity=['crown', '2_shiny', '3_star', '2_star', '1_star', '3_diamond', '2_diamond', '1_diamond']
     )
 
     _, _, _, seeking_rarity_found_percent_90 = simulate_many(
-        trials=100_000,
+        trials=1_000,
         packs_per_trial=90,
         seeking_rarity=['crown', '2_shiny', '3_star', '2_star', '1_star', '3_diamond', '2_diamond', '1_diamond']
     )
@@ -77,8 +77,12 @@ def menu() -> None:
     elif user_input == 4:
         config_setup()
     elif user_input == 5:
-        #TO-DO: add change card_threshold value
-        which_pack_open()
+        card_threshold = input('Input card threshold\n')
+        try:
+            which_pack_open(int(card_threshold))
+        except ValueError:
+            print(f'\nPROVIDED VALUE \033[91m{card_threshold}\033[00m\nThis Value cannot be converted to int\nexecute which_pack_open() with value 1')
+            which_pack_open()
     elif user_input == 6:
         open_promo()
     elif user_input == 7:
