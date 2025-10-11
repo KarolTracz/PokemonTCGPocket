@@ -36,68 +36,102 @@ def main() -> None:
     while True:
         menu()
 
-
-def menu() -> None:
+#TO-DO: add quiting mechanizm (tkinter?)
+def menu(debug_mode: bool = False) -> None:
     if not is_scrcpy_on():
         user_input = input('scrcpy is off. Do you want to run it? y/n\n').lower()
         if user_input == 'y':
             Popen(['scrcpy', '--turn-screen-off', '--no-audio'])
             sleep(1)
         elif user_input == 'debug':
-            pass
+            debug_mode = True
         else:
             print('you need to run scrcpy')
             exit()
-
-    user_input = input("Input number\n"
-                       "1. Scan whole card list\n"
-                       "2. Scan selected set\n"
-                       "3. List amount of missing 1-4 diamond cards\n"
-                       "4. Config setup\n"
-                       "5. which_pack_open()\n"
-                       "6. open_promo()\n"
-                       "7. screenshot()\n"
-                       "8. claim_all_rewards()\n"
-                       "9. tab_detection()\n")
-    if user_input == 'q':
-        exit()
-    try:
-        user_input = int(user_input)
-    except ValueError:
-        print('Wrong value Bro :|')
-        print('You need to put int')
-
-    if user_input == 1:
-        count_all_cards()
-    elif user_input == 2:
-        set_and_rarity = select_set_and_rarity()
-        scan_set(set_and_rarity)
-    elif user_input == 3:
-        list_missing_cards()
-    elif user_input == 4:
-        config_setup()
-    elif user_input == 5:
-        card_threshold = input('Input card threshold\n')
+    if debug_mode:
+        user_input = input("Input number\n"
+                           "1. Scan whole card list\n"
+                           "2. Scan selected set\n"
+                           "3. List amount of missing 1-4 diamond cards\n"
+                           "4. Config setup\n"
+                           "5. which_pack_open()\n"
+                           "6. open_promo()\n"
+                           "7. screenshot()\n"
+                           "8. claim_all_rewards()\n"
+                           "9. tab_detection()\n")
+        if user_input == 'q':
+            exit()
         try:
-            which_pack_open(int(card_threshold))
+            user_input = int(user_input)
         except ValueError:
-            print(f'\nPROVIDED VALUE \033[91m{card_threshold}\033[00m\nThis Value cannot be converted to int\nexecute which_pack_open() with value 1')
-            which_pack_open()
-    elif user_input == 6:
-        open_promo()
-    elif user_input == 7:
-        screenshot()
-    elif user_input == 8:
-        claim_all_rewards()
-    elif user_input == 9:
-        print(tab_detection())
-    elif user_input == 10:
-        screenshot_and_crop_area(area=(135, 569, 290, 641), name='is_card_new')
-        is_card_new = compare_img(template_path='images/new_card_tag.png', image_path='temp/is_card_new.png')
-        print(is_card_new)
+            print('Wrong value Bro :|')
+            print('You need to put int')
+
+        if user_input == 1:
+            count_all_cards()
+        elif user_input == 2:
+            set_and_rarity = select_set_and_rarity()
+            scan_set(set_and_rarity)
+        elif user_input == 3:
+            list_missing_cards()
+        elif user_input == 4:
+            config_setup()
+        elif user_input == 5:
+            card_threshold = input('Input card threshold\n')
+            try:
+                which_pack_open(int(card_threshold))
+            except ValueError:
+                print(f'\nPROVIDED VALUE \033[91m{card_threshold}\033[00m\nThis Value cannot be converted to int\nexecute which_pack_open() with value 1')
+                which_pack_open()
+        elif user_input == 6:
+            open_promo()
+        elif user_input == 7:
+            screenshot()
+        elif user_input == 8:
+            claim_all_rewards()
+        elif user_input == 9:
+            print(tab_detection())
+        elif user_input == 10:
+            screenshot_and_crop_area(area=(135, 569, 290, 641), name='is_card_new')
+            is_card_new = compare_img(template_path='images/new_card_tag.png', image_path='temp/is_card_new.png')
+            print(is_card_new)
+
+        else:
+            pass
 
     else:
-        pass
+        user_input = input("Input number\n"
+                           "1. Scan whole card list\n"
+                           "2. Scan selected set\n"
+                           "3. Which pack open\n"
+                           "4. Open promo packs\n")
+        if user_input == 'q':
+            exit()
+        try:
+            user_input = int(user_input)
+        except ValueError:
+            print('Wrong value Bro :|')
+            print('You need to put int')
+
+        if user_input == 1:
+            count_all_cards()
+        elif user_input == 2:
+            set_and_rarity = select_set_and_rarity()
+            scan_set(set_and_rarity)
+        elif user_input == 3:
+            #TO-OD: Foil include in which_pack_open()
+            card_threshold = input('Input card threshold\n')
+            try:
+                which_pack_open(int(card_threshold))
+            except ValueError:
+                print(f'\nPROVIDED VALUE \033[91m{card_threshold}\033[00m\nThis Value cannot be converted to int\nexecute which_pack_open() with value 1')
+                which_pack_open()
+        elif user_input == 4:
+            open_promo()
+
+        else:
+            print(f'\n YOU INPUT: {user_input}\n is not in range 1-4 \n')
+
 
 
 def press(position: Tuple[int, int, int, int]) -> None:
