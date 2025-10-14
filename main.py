@@ -19,36 +19,36 @@ with open('config.json', 'r') as f:
     config = load(f)
 
 def main() -> None:
-    _, _, _, seeking_rarity_found_percent_60 = simulate_many(
-        trials=1_000,
-        packs_per_trial=60,
-        seeking_rarity=['crown', '2_shiny', '3_star', '2_star', '1_star', '3_diamond', '2_diamond', '1_diamond']
-    )
+    # _, _, _, seeking_rarity_found_percent_60 = simulate_many(
+    #     trials=1_000,
+    #     packs_per_trial=60,
+    #     seeking_rarity=['crown', '2_shiny', '3_star', '2_star', '1_star', '3_diamond', '2_diamond', '1_diamond']
+    # )
+    #
+    # _, _, _, seeking_rarity_found_percent_90 = simulate_many(
+    #     trials=1_000,
+    #     packs_per_trial=90,
+    #     seeking_rarity=['crown', '2_shiny', '3_star', '2_star', '1_star', '3_diamond', '2_diamond', '1_diamond']
+    # )
+    #
+    # print(f'{seeking_rarity_found_percent_60=}')
+    # print(f'{seeking_rarity_found_percent_90=}')
 
-    _, _, _, seeking_rarity_found_percent_90 = simulate_many(
-        trials=1_000,
-        packs_per_trial=90,
-        seeking_rarity=['crown', '2_shiny', '3_star', '2_star', '1_star', '3_diamond', '2_diamond', '1_diamond']
-    )
-
-    print(f'{seeking_rarity_found_percent_60=}')
-    print(f'{seeking_rarity_found_percent_90=}')
-
-    menu()
+    menu(debug_mode=True)
 
 
 #TO-DO: add quiting mechanizm (tkinter?)
 def menu(debug_mode: bool = False) -> None:
-    # if not is_scrcpy_on():
-    #     user_input = input('scrcpy is off. Do you want to run it? y/n\n').lower()
-    #     if user_input == 'y':
-    #         Popen(['scrcpy', '--turn-screen-off', '--no-audio'])
-    #         sleep(1)
-    #     elif user_input == 'debug':
-    #         debug_mode = True
-    #     else:
-    #         print('you need to run scrcpy')
-    #         exit()
+    if not is_scrcpy_on():
+        user_input = input('scrcpy is off. Do you want to run it? y/n\n').lower()
+        if user_input == 'y':
+            Popen(['scrcpy', '--turn-screen-off', '--no-audio'])
+            sleep(1)
+        elif user_input == 'debug':
+            debug_mode = True
+        else:
+            print('you need to run scrcpy')
+            exit()
 
     while True:
         if debug_mode:
@@ -162,15 +162,11 @@ def press(position: Tuple[int, int, int, int]) -> None:
 
 def tab_detection() -> str:
     screenshot_and_crop_area(area=(0, 2260, 1080, 2400), name='tab_bar')
-    # crop(image_path='./temp/screen.png', area=(0, 2260, 216, 2400), name='home')
-    # crop(image_path='./temp/screen.png', area=(216, 2260, 432, 2400), name='cards')
-    # crop(image_path='./temp/screen.png', area=(432, 2260, 648, 2400), name='social')
-    # crop(image_path='./temp/screen.png', area=(648, 2260, 864, 2400), name='battle')
 
-    crop(image_path='./temp/screen.png', area=(20, 2260, 240, 2400), name='home')
-    crop(image_path='./temp/screen.png', area=(240, 2260, 460, 2400), name='cards')
-    crop(image_path='./temp/screen.png', area=(460, 2260, 680, 2400), name='social')
-    crop(image_path='./temp/screen.png', area=(680, 2260, 900, 2400), name='battle')
+    # crop(image_path='./temp/screen.png', area=(100, 2295, 175, 2365), name='home')
+    # crop(image_path='./temp/screen.png', area=(301, 2295, 376, 2365), name='cards')
+    # crop(image_path='./temp/screen.png', area=(502, 2295, 577, 2365), name='social')
+    # crop(image_path='./temp/screen.png', area=(703, 2295, 778, 2365), name='battle')
 
     home_selected = compare_img(template_path='images/tab_bar/selected/home.png', image_path='temp/tab_bar.png')
     cards_selected = compare_img(template_path='images/tab_bar/selected/cards.png', image_path='temp/tab_bar.png')
@@ -179,8 +175,8 @@ def tab_detection() -> str:
 
     threshold = 0.9
     tab_confidence = [home_selected, cards_selected, social_selected, battle_selected]
-    # for i in tab_confidence:
-    #     print(f'{i:.2f}')
+    for i in tab_confidence:
+        print(f'{i:.2f}')
     tab_over_threshold = [i for i in tab_confidence  if i > threshold]
 
     if home_selected in tab_over_threshold:
