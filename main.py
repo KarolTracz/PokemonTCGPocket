@@ -527,7 +527,7 @@ def select_rarity(full_set=True) -> Tuple[str]:
 
 def draw_loading_bar(style_num: str, pokemon: tuple, iteration:int, loop_size:int, **kwargs) -> None:
     card_amount = kwargs.get('card_amount', None)
-    columns, _ = get_terminal_size()
+    columns = get_terminal_size().columns
     progres_bar_width = columns - 10
 
     styles = {
