@@ -13,7 +13,6 @@ import random
 
 import cv2
 from PIL import Image
-from twisted.python.formmethod import Boolean
 
 with open('config.json', 'r') as f:
     config = load(f)
@@ -59,57 +58,36 @@ def menu(debug_mode: bool = False) -> None:
 
 
 def debug_menu() -> None:
-    user_input = input("Input number\n"
-                       "1. Scan whole card list\n"
-                       "2. Scan selected set\n"
-                       "3. List amount of missing 1-4 diamond cards\n"
-                       "4. Config setup\n"
-                       "5. which_pack_open()\n"
-                       "6. open_promo()\n"
-                       "7. screenshot()\n"
-                       "8. claim_all_rewards()\n"
-                       "9. tab_detection()\n"
-                       "10. screenshot_and_crop_area()\n").lower()
-    if user_input == 'q':
-        exit()
+    menu_dict = {
+        '1': count_all_cards,
+        '2': select_set_and_rarity,
+        '3': scan_set,
+        '4': list_missing_cards,
+        '5': config_setup,
+        '6': which_pack_open,
+        '7': open_promo,
+        '8': screenshot,
+        '9': claim_all_rewards,
+        '10': tab_detection,
+        '11': screenshot_and_crop_area,
+        '12': press,
+        '13': move_card_forward,
+        '14': move_card_backward
+    }
+
+    for k, v in menu_dict.items():
+        print(k, v)
+
+    #TO-DO: add parsing *args - '3 a4b' -> scan_set('a4b',)
+    user_input = input()
 
     try:
-        user_input = int(user_input)
+        menu_dict[user_input]()
     except ValueError:
-        print('Wrong value Bro :|')
-        print('You need to put int')
-
-    if user_input == 1:
-        count_all_cards()
-    elif user_input == 2:
-        set_and_rarity = select_set_and_rarity()
-        scan_set(set_and_rarity)
-    elif user_input == 3:
-        list_missing_cards()
-    elif user_input == 4:
-        config_setup()
-    elif user_input == 5:
-        card_threshold = input('Input card threshold\n')
-        try:
-            which_pack_open(int(card_threshold))
-        except ValueError:
-            print(f'\nPROVIDED VALUE \033[91m{card_threshold}\033[00m\nThis Value cannot be converted to int\nexecute which_pack_open() with value 1')
-            which_pack_open()
-    elif user_input == 6:
-        open_promo()
-    elif user_input == 7:
-        screenshot()
-    elif user_input == 8:
-        claim_all_rewards()
-    elif user_input == 9:
-        print(tab_detection())
-    elif user_input == 10:
-        screenshot_and_crop_area(area=(135, 569, 290, 641), name='is_card_new')
-        is_card_new = compare_img(template_path='images/new_card_tag.png', image_path='temp/is_card_new.png')
-        print(is_card_new)
+        print(f"\nInvalid input: '{user_input}'. Please enter a number between 1 and 4.\n")
 
 
-def normal_menu() -> None | Boolean:
+def normal_menu() -> None | bool:
     user_input = input("Input number\n"
                        "1. Scan whole card list\n"
                        "2. Scan selected set\n"
@@ -122,10 +100,8 @@ def normal_menu() -> None | Boolean:
     try:
         user_input = int(user_input)
     except ValueError:
-        if user_input.lower() == 'debug':
-            debug_mode = True
-            print('Wrong value Bro :|')
-            print('You need to put int')
+        print('Wrong value Bro :|')
+        print('You need to put int')
 
     if user_input == 1:
         count_all_cards()
