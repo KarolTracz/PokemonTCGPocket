@@ -1,6 +1,6 @@
 from collections import Counter
 from random import randrange
-from time import sleep
+from time import sleep, time
 from json import load, dumps
 from os import listdir
 from os.path import join as path_join
@@ -8,6 +8,7 @@ from subprocess import run, Popen
 from typing import Tuple
 from math import floor
 from shutil import get_terminal_size
+from functools import wraps
 import sqlite3
 import random
 
@@ -81,9 +82,12 @@ def debug_menu() -> None:
     #TO-DO: add parsing *args - '3 a4b' -> scan_set('a4b',)
     user_input = input()
 
+    if user_input.lower() == 'q':
+        exit()
+
     try:
         menu_dict[user_input]()
-    except ValueError:
+    except KeyError:
         print(f"\nInvalid input: '{user_input}'. Please enter a number between 1 and 4.\n")
 
 
@@ -134,6 +138,17 @@ def press(position: Tuple[int, int, int, int]) -> None:
     y = str(randrange(position[1], position[3]))
 
     run(["adb", "shell", "input", "tap", x, y])
+
+
+def time_func(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time()
+        result = func(*args, **kwargs)
+        end = time()
+        print(f"⏱️ {func.__name__} took {end - start:.6f} seconds")
+        return result
+    return wrapper
 
 
 def tab_detection() -> str:
@@ -619,7 +634,7 @@ def scan_set(set_and_rarity: Tuple[Tuple[str], Tuple[str]]) -> None:
             print(k, v)
         print()
 
-
+@time_func
 def count_all_cards() -> None:
     con = sqlite3.connect('PokeDB.db')
     cur = con.cursor()
