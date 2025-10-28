@@ -2,8 +2,6 @@ from collections import Counter
 from random import randrange
 from time import sleep, time
 from json import load, dumps
-from os import listdir
-from os.path import join as path_join
 from subprocess import run, Popen
 from typing import Tuple
 from math import floor
@@ -11,6 +9,7 @@ from shutil import get_terminal_size
 from functools import wraps
 import sqlite3
 import random
+import os
 
 import cv2
 from PIL import Image
@@ -36,6 +35,11 @@ def main() -> None:
 
     menu(debug_mode=True)
 
+def clear() -> None:
+    if os.name == 'nt':
+        os.system('cls')
+    else:
+        os.system('clear')
 
 #TO-DO: add quiting mechanizm (tkinter?)
 def menu(debug_mode: bool = False) -> None:
@@ -76,11 +80,13 @@ def debug_menu() -> None:
         '14': move_card_backward
     }
 
+    clear()
     for k, v in menu_dict.items():
         print(k, v)
 
     #TO-DO: add parsing *args - '3 a4b' -> scan_set('a4b',)
     user_input = input()
+    clear()
 
     if user_input.lower() == 'q':
         exit()
@@ -97,6 +103,7 @@ def normal_menu() -> None | bool:
                        "2. Scan selected set\n"
                        "3. Which pack open\n"
                        "4. Open promo packs\n").lower()
+    clear()
     if user_input == 'q':
         exit()
     if user_input == 'debug':
@@ -686,8 +693,8 @@ def count_all_cards() -> None:
 
 
 def count_card(threshold: float = 0.95) -> int | None:
-    for number in listdir('images/numbers'):
-        num_img = path_join('images/numbers', number)
+    for number in os.listdir('images/numbers'):
+        num_img = os.path.join('images/numbers', number)
         confidence = compare_img(template_path=num_img, image_path='./temp/number.png')
         if confidence > threshold:
             return int(number[:2])
